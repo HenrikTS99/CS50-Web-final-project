@@ -6,11 +6,17 @@ from django.urls import reverse
 from django.db import IntegrityError
 from django.shortcuts import render
 from .models import User
+from .forms import ItemForm
+from . import utils
+import datetime
 
 
 
 def index(request):
-    return render(request, "tf2folio/index.html")
+    items = request.user.owned_items.all()
+    return render(request, "tf2folio/index.html", {
+        "items": items
+    })
 
 
 def login_view(request):
@@ -57,7 +63,22 @@ def register(request):
     else:
         return render(request, "tf2folio/register.html")
 
+
+def new_item(request):
+    if request.method == "POST":
+        form = ItemForm(request.POST)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.owner = request.user
+            obj.date = datetime.date.today()
+            #obj.title = 
+            print(utils.create_title(obj))
+            obj.save()
+            return HttpResponseRedirect(reverse("index"))
     
+    return render(request, "tf2folio/new-item.html", {
+        "form": ItemForm()
+    })
     
 
 

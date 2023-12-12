@@ -1,0 +1,12 @@
+{% extends "tf2folio/layout.html" %}
+
+{% block body%}
+    <div>
+        <h2>Register Item</h2>
+        <form class="item-form" action="{% url 'new_item' %}" method="POST">
+            {% csrf_token %}
+            {{form}}
+            <button type="submit" class="btn btn-primary">Register Item</button>
+        </form>
+    </div>
+{% endblock %}

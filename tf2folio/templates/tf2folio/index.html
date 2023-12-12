@@ -2,6 +2,8 @@
 <title>{% block title %}Index{% endblock %}</title>
 {% block body %}
     
-    Index
+{% for item in items %}
+    {{item.item_name}}
+{% endfor%}
     
 {% endblock %}
