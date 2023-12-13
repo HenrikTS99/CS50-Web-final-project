@@ -71,8 +71,10 @@ def new_item(request):
             obj = form.save(commit=False)
             obj.owner = request.user
             obj.date = datetime.date.today()
-            #obj.title = 
-            print(utils.create_title(obj))
+            obj.item_title = utils.create_title(obj)
+            obj.image_url = utils.create_image(obj)
+            if obj.particle_effect:
+                obj.particle_id = utils.get_particle_id(obj.particle_effect)
             obj.save()
             return HttpResponseRedirect(reverse("index"))
     

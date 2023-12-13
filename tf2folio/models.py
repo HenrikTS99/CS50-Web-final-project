@@ -44,6 +44,7 @@ class Item(models.Model):
     texture_name = models.CharField(max_length=64, null=True, blank=True)
     wear = models.CharField(max_length=20, choices=WEAR_TIERS, blank=True)
     particle_effect = models.CharField(max_length=64, blank=True)
+    particle_id = models.CharField(max_length=4, blank=True)
     description = models.TextField(max_length=400, null=True, blank=True)
     killstreak = models.CharField(max_length=20, choices=KILLSTREAK_TIERS, null=True, blank=True)
     # date_arrived = models.DateTimeField(null=True, blank=True)
