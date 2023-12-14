@@ -1,0 +1,10 @@
+
+<div class="item-box" data-item-id="{{item.id}}">
+    <div class='item-box-image'>
+        {% if item.particle_id %}
+            <img class="particle-image" src="static/tf2folio/particles/{{item.particle_id}}_188x188.png">
+        {% endif %}
+        <img class="item-image" src="{{item.image_url}}">
+    </div>
+    <span class="{{item.quality}}">{{item.item_title}}</span>
+</div>

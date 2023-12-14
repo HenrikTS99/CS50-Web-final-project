@@ -1,0 +1,48 @@
+{% extends "tf2folio/layout.html" %}
+{% load static %}
+
+{% block body %}
+    <div id="trade-register" class="center-div">
+        <h2>Register Trade</h2>
+        <h4>Selected Items:</h4>
+        <div id="selected-items" class="item-boxes-container">
+
+        </div>
+        <h5>Transaction Type</h5>
+        <button class="btn btn-sm btn-outline-primary" id="sale">Sale</button>
+        <button class="btn btn-sm btn-outline-primary" id="buy">Purchase</button>
+        <form class="item-form" action="{% url 'new_trade' %}" method="POST">
+            {% csrf_token %}
+            <div id="sale-form">
+                <div class="form-rows">
+                    <label for="{{ sale_form.items_sold.id_for_label }}">Items Sold:</label>
+                    {{sale_form.items_sold}}
+
+                    <button class="btn btn-sm btn-outline-primary" id="add-item">Add Item</button>
+
+                    <label for="{{ sale_form.transaction_method.id_for_label }}">Transaction Method:</label>
+                    {{sale_form.transaction_method}}
+                    <label for="{{ sale_form.amount.id_for_label }}">Amount:</label>
+                    {{sale_form.amount}}
+                    <label for="{{ sale_form.description.id_for_label }}">Description:</label>
+                    {{sale_form.description}}
+                </div>
+            </div>
+            <div id="buy-form">
+                <div class="form-rows">
+                    {% for field in buy_form %}
+                        {{field}}
+                    {% endfor %}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Register Trade</button>
+        </form>
+    </div>
+    <div id="item-register">
+        {% include 'tf2folio/new-item.html' %}
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'tf2folio/new-trade.js' %}"></script>
+{% endblock %}
