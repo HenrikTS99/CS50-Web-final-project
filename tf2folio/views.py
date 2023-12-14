@@ -1,14 +1,17 @@
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.db import IntegrityError
 from django.shortcuts import render
-from .models import User
-from .forms import ItemForm
+from .models import User, Item
+from .forms import ItemForm, TradeSaleForm, TradeBuyForm
 from . import utils
 import datetime
+from django.http import JsonResponse
+import json
 
 
 
@@ -83,4 +86,58 @@ def new_item(request):
     })
     
 
+def new_trade(request):
+    if request.method == "POST":
+        pass
+
+    return render(request, "tf2folio/new-trade.html", {
+        "sale_form": TradeSaleForm(), "buy_form": TradeBuyForm(), 
+        "item_form": ItemForm()
+    })
+
+
+def register_item(request):
+
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+
+    form = ItemForm(request.POST)
+    if form.is_valid():
+        obj = form.save(commit=False)
+        obj.owner = request.user
+        obj.date = datetime.date.today()
+        obj.item_title = utils.create_title(obj)
+        obj.image_url = utils.create_image(obj)
+        if obj.particle_effect:
+            obj.particle_id = utils.get_particle_id(obj.particle_effect)
+        obj.save()
+
+        item_html = render_to_string('tf2folio/item-template.html', {'item': obj })
+
+        response_data = {
+            "message": "Data sent successfully.",
+            "item_id": obj.id,
+            "item_html": item_html
+
+        }
+        return JsonResponse(response_data, status=201)
+    return JsonResponse({"message": "Invalid form data."}, status=400)
+
+
+def get_item_html(request, item_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+
+    try:
+        item = Item.objects.get(pk=item_id)
+    except Item.DoesNotExist:
+        return JsonResponse({"error": "Item not found."}, status=404)
+
+    item_html = render_to_string('tf2folio/item-template.html', {'item': item })
+    response_data = {
+            "message": "Data sent successfully.",
+            "item_html": item_html
+        }
+    return JsonResponse(response_data, status=201)
+    
 

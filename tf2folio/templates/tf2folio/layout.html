@@ -8,6 +8,8 @@
         <link href="https://fonts.cdnfonts.com/css/tf2-build" rel="stylesheet">
         <script src="https://kit.fontawesome.com/55e4b5feda.js" crossorigin="anonymous"></script>
         <link href="{% static 'tf2folio/styles.css' %}" rel="stylesheet">
+        {% block script %}
+        {% endblock %}
     </head>
     <body>
 
@@ -22,6 +24,9 @@
                 {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'new_item' %}">New Item</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'new_trade' %}">New Trade</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">Log Out</a>

@@ -12,6 +12,16 @@
     justify-content: center;
 }
 
+.center-div {
+    text-align: center;
+}
+/* trade form */
+
+.form-rows {
+    display: grid;
+    justify-content: center;
+}
+
 /* index / item box */
 .item-boxes-container {
     display: flex;

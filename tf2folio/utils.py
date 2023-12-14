@@ -500,7 +500,9 @@ def create_title(Item):
 
     title_parts.append(Item.item_name)
 
-    if Item.wear:
+    if Item.texture_name:
+        if not Item.wear:
+            Item.wear = 'Factory New'
         title_parts.append(f"({Item.get_wear_display().title()})")
     return ' '.join(title_parts)
 
@@ -509,7 +511,11 @@ def create_image(Item):
     search_name = ''
     # Warpaints
     if Item.texture_name:
-        search_name = f'{Item.texture_name} {Item.item_name}%20(Factory%20New)'
+        if Item.quality == 'decorated':
+            search_name = f'{Item.texture_name} {Item.item_name} ({Item.get_wear_display().title()})'
+        else:
+            search_name = f'{Item.quality} {Item.texture_name} {Item.item_name} ({Item.get_wear_display().title()})'
+
     # Australium
     elif Item.australium:
         search_name = f'Strange Australium {Item.item_name}'
@@ -528,7 +534,7 @@ def create_image(Item):
             print('Failed to fetch the image', 404, search_name)
             print("Testing capitalized title.")
             search_name = search_name.title()
-    return None
+    return 'https://wiki.teamfortress.com/w/images/thumb/c/c4/Unknownweapon.png/256px-Unknownweapon.png'
 
 
 def get_particle_id(particle_effect):
@@ -541,4 +547,5 @@ def get_particle_id(particle_effect):
         else:
             print("Particle ID lookup failed, trying again with capitalized title.")
             particle_effect = particle_effect.title()
+    return None
 
