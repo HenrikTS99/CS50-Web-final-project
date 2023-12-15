@@ -11,7 +11,7 @@
         <h5>Transaction Type</h5>
         <button class="btn btn-sm btn-outline-primary" id="sale">Sale</button>
         <button class="btn btn-sm btn-outline-primary" id="buy">Purchase</button>
-        <form class="item-form" action="{% url 'new_trade' %}" method="POST">
+        <form class="item-form" id="trade-register-form" action="{% url 'new_trade' %}" method="POST">
             {% csrf_token %}
             <div id="sale-form">
                 <div class="form-rows">
@@ -24,10 +24,20 @@
                     {{sale_form.transaction_method}}
                     <label for="{{ sale_form.amount.id_for_label }}">Amount:</label>
                     {{sale_form.amount}}
+                    <label for="{{ sale_form.currency.id_for_label }}">Currency:</label>
+                    <input type="text" name="currency" list="currencies" />
+                        <datalist id="currencies">
+                            {% for currency in sale_form.fields.currency.choices %}
+                                <option value="{{ currency.0 }}">{{ currency.1 }}</option>
+                            {% endfor %}
+                        </datalist>
                     <label for="{{ sale_form.description.id_for_label }}">Description:</label>
                     {{sale_form.description}}
                 </div>
             </div>
+            <button type="submit" form="trade-register-form" id="trade-submit-button" class="btn btn-primary">Register Trade</button>
+        </form>
+        <!--Bug if bottom div is inside form-->
             <div id="buy-form">
                 <div class="form-rows">
                     {% for field in buy_form %}
@@ -35,8 +45,7 @@
                     {% endfor %}
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">Register Trade</button>
-        </form>
+        
     </div>
     <div id="item-register">
         {% include 'tf2folio/new-item.html' %}

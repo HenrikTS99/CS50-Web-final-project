@@ -1,0 +1,37 @@
+{% extends "tf2folio/layout.html" %}
+<title>{% block title %}Trade History{% endblock %}</title>
+{% block body %}
+
+<div class="trade-display-container">
+{% for trade in all_trades %}
+    <div class="trade-box">
+        {% if trade.transaction_type == 'sale' %}
+            <h3>Sold:</h3>
+        {% else %}
+            <h3>Purchased:</h3>
+        {% endif %}
+
+        {% for item in trade.items_sold.all %}
+            <div class="item-box" data-item-id="{{item.id}}">
+                <div class='item-box-image'>
+                    {% if item.particle_id %}
+                        <img class="particle-image" src="static/tf2folio/particles/{{item.particle_id}}_188x188.png">
+                    {% endif %}
+                    <img class="item-image" src="{{item.image_url}}">
+                </div>
+                <span class="{{item.quality}}">{{item.item_title}}</span>
+            </div>
+        {% endfor %}
+        <h3>For:</h3>
+        <div><b>{{trade.amount|floatformat}} 
+            {% if trade.currency %}
+                {{trade.currency}}
+            {% endif %}
+            {{trade.get_transaction_method_display}}</b></div>
+        {{trade.description}}
+        {{trade.date}}
+    </div>
+{% endfor%}
+</div>
+    
+{% endblock %}

@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+import pycountry
 
 # Create your models here.
 
@@ -67,11 +68,16 @@ class Transaction(models.Model):
         ('paypal', 'PayPal'),
         ('items', 'TF2 Items')
     ]
+
+    CURRENCY_CHOICES = [
+        (currency.alpha_3, currency.alpha_3) for currency in pycountry.currencies]
+    
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name= "user_transactions", default=None)
     transaction_type = models.CharField(max_length=4, choices=TRANSACTION_CHOICES)
     transaction_method = models.CharField(max_length=30, choices=SELL_METHOD_CHOICES)
+    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     items_sold = models.ManyToManyField('Item', blank=True, related_name="sales_transactions")
     items_bought = models.ManyToManyField('Item', blank=True, related_name="buys_transactions")
     description = models.TextField(max_length=400, null=True, blank=True)
-    date = models.DateField(null=True, blank=True)
+    date = models.DateTimeField(null=True, blank=True)

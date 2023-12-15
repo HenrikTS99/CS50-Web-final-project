@@ -6,8 +6,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.db import IntegrityError
 from django.shortcuts import render
-from .models import User, Item
-from .forms import ItemForm, TradeSaleForm, TradeBuyForm
+from .models import User, Item, Transaction
+from .forms import ItemForm, TradeSaleForm, TradeBuyForm, TransactionForm
 from . import utils
 import datetime
 from django.http import JsonResponse
@@ -21,6 +21,12 @@ def index(request):
         "items": items
     })
 
+@login_required
+def trade_history(request):
+    all_trades = Transaction.objects.filter(owner=request.user).order_by('-date')
+    return render(request, "tf2folio/trade-history.html", {
+        "all_trades": all_trades
+    })
 
 def login_view(request):
     if request.method == 'POST':
@@ -139,5 +145,49 @@ def get_item_html(request, item_id):
             "item_html": item_html
         }
     return JsonResponse(response_data, status=201)
+
+
+def register_trade(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+
+    item_ids = json.loads(request.POST['itemIds'])
+    item_list = []
+    for item_id in item_ids:
+        try:
+            item = Item.objects.get(pk=item_id)
+            item_list.append(item)
+        except Item.DoesNotExist:
+            return JsonResponse({"error": "Item not found."}, status=404)
+
+
+    form = TransactionForm(request.POST)
+    if form.is_valid():
+        obj = form.save(commit=False)
+        obj.owner = request.user
+        obj.date = datetime.datetime.now()
+
+        obj.save() # Save the object to generate an id
+
+        for item in item_list:
+            if obj.transaction_type == "sale":
+                obj.items_sold.add(item)
+            elif obj.transaction_type == "buy":
+                obj.items_bought.add(item)
+
+        obj.save() # Save the changes to the many-to-many fields
+
+        transaction_html = render_to_string('tf2folio/transaction-template.html', {'transaction': obj })
+        response_data = {
+            "message": "Data sent successfully.",
+            "transaction_id": obj.id,
+            "transaction_html": transaction_html,
+            "redirect_url": reverse("trade_history")
+        }
+        return JsonResponse(response_data, status=201)
+    print(form.errors)
+    return JsonResponse({"message": "Invalid form data."}, status=400)
+        
+
     
 
