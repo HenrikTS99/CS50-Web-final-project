@@ -160,7 +160,6 @@ def register_trade(request):
         except Item.DoesNotExist:
             return JsonResponse({"error": "Item not found."}, status=404)
 
-
     form = TransactionForm(request.POST)
     if form.is_valid():
         obj = form.save(commit=False)
