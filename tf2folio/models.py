@@ -82,3 +82,11 @@ class Transaction(models.Model):
     description = models.TextField(max_length=400, null=True, blank=True)
     date = models.DateTimeField(null=True, blank=True)
 
+    def __str__(self):
+        items_sold_titles = ", ".join([str(item) for item in self.items_sold.all()])
+        items_bought_titles = ", ".join([str(item) for item in self.items_bought.all()])
+        currency = self.currency if self.currency else ""
+        if self.transaction_type == "sale":
+            return f"{self.owner} sold {items_sold_titles} for {self.amount} {self.transaction_method} {currency} {items_bought_titles} on {self.date}"
+        return f"{self.owner} bought {items_bought_titles} for {self.amount} {self.transaction_method} {currency} on {self.date}"
+

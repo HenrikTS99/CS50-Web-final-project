@@ -1,6 +1,10 @@
 <div class="transaction-box">
     {{transaction.transaction_type}}
-    {{transaction.items_sold}}
+    {% if transaction.transaction_type == 'sold' %}
+        {{transaction.items_sold}}
+    {% else %}
+        {{transaction.items_bought}}
+    {% endif %}
     {{transaction.transaction_method}}
     {{transaction.amount}}
     {{transaction.description}}

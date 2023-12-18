@@ -9,47 +9,74 @@
 
         </div>
         <h5>Transaction Type</h5>
-        <button class="btn btn-sm btn-outline-primary" id="sale">Sale</button>
+        <button class="btn btn-sm btn-primary" id="sale">Sale</button>
         <button class="btn btn-sm btn-outline-primary" id="buy">Purchase</button>
-        <form class="item-form" id="trade-register-form" action="{% url 'new_trade' %}" method="POST">
+        <form class="item-form" id="sale-form">
             {% csrf_token %}
-            <div id="sale-form">
-                <div class="form-rows">
-                    <label for="{{ sale_form.items_sold.id_for_label }}">Items Sold:</label>
-                    {{sale_form.items_sold}}
+            <div class="form-rows">
+                <label for="{{ sale_form.items_sold.id_for_label }}">Select Items Sold:</label>
+                {{sale_form.items_sold}}
 
-                    <button class="btn btn-sm btn-outline-primary" id="add-item">Add Item</button>
+                <button type="button" class="btn btn-sm btn-outline-primary add-item">Add Item</button>
 
-                    <label for="{{ sale_form.transaction_method.id_for_label }}">Transaction Method:</label>
-                    {{sale_form.transaction_method}}
-                    <label for="{{ sale_form.amount.id_for_label }}">Amount:</label>
-                    {{sale_form.amount}}
-                    <label for="{{ sale_form.currency.id_for_label }}">Currency:</label>
-                    <input type="text" name="currency" list="currencies" />
-                        <datalist id="currencies">
-                            {% for currency in sale_form.fields.currency.choices %}
-                                <option value="{{ currency.0 }}">{{ currency.1 }}</option>
-                            {% endfor %}
-                        </datalist>
-                    <label for="{{ sale_form.description.id_for_label }}">Description:</label>
-                    {{sale_form.description}}
-                </div>
+                <h5>Sold For:</h5>
+                <label for="{{ sale_form.transaction_method.id_for_label }}">Transaction Method:</label>
+                {{sale_form.transaction_method}}
+                <label for="{{ sale_form.amount.id_for_label }}">Amount:</label>
+                {{sale_form.amount}}
+                <label for="{{ sale_form.currency.id_for_label }}">Currency:</label>
+                <input type="text" name="currency" list="currencies" />
+                    <datalist id="currencies">
+                        {% for currency in sale_form.fields.currency.choices %}
+                            <option value="{{ currency.0 }}">{{ currency.1 }}</option>
+                        {% endfor %}
+                    </datalist>
+
+                <label for="{{ sale_form.items_bought.id_for_label }}">Items Recieved:</label>
+                <div id="recieved-items" class="item-boxes-container"></div>
+                {{sale_form.items_bought}}
+                <button type="button" class="btn btn-sm btn-outline-primary add-item" id="add-recieved-item" >Add Item</button>
+
+                <label for="{{ sale_form.description.id_for_label }}">Description:</label>
+                {{sale_form.description}}
             </div>
-            <button type="submit" form="trade-register-form" id="trade-submit-button" class="btn btn-primary">Register Trade</button>
+            <button type="submit" form="sale-form" id="trade-submit-button" class="btn btn-primary">Register Salse</button>
         </form>
-        <!--Bug if bottom div is inside form-->
-            <div id="buy-form">
-                <div class="form-rows">
-                    {% for field in buy_form %}
-                        {{field}}
-                    {% endfor %}
-                </div>
+
+
+
+        <form class="item-form" id="buy-form">
+            {% csrf_token %}
+            <div class="form-rows">
+                <label for="{{ buy_form.items_bought.id_for_label }}">Select Items Bought:</label>
+                {{buy_form.items_bought}}
+
+                <button type="button" class="btn btn-sm btn-outline-primary add-item">Add Item</button>
+
+                <label for="{{ buy_form.transaction_method.id_for_label }}">Transaction Method:</label>
+                {{buy_form.transaction_method}}
+                <label for="{{ buy_form.amount.id_for_label }}">Amount:</label>
+                {{buy_form.amount}}
+                <label for="{{ buy_form.currency.id_for_label }}">Currency:</label>
+                <input type="text" name="currency" list="currencies" />
+                    <datalist id="currencies">
+                        {% for currency in buy_form.fields.currency.choices %}
+                            <option value="{{ currency.0 }}">{{ currency.1 }}</option>
+                        {% endfor %}
+                    </datalist>
+                <label for="{{ buy_form.description.id_for_label }}">Description:</label>
+                {{buy_form.description}}
             </div>
+            <button type="submit" form="buy-form" id="trade-submit-button" class="btn btn-primary">Register Purchase</button>
+        </form>
         
     </div>
+
+
     <div id="item-register">
         {% include 'tf2folio/new-item.html' %}
     </div>
+
 {% endblock %}
 
 {% block script %}

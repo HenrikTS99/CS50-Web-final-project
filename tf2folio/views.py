@@ -10,6 +10,7 @@ from .models import User, Item, Transaction
 from .forms import ItemForm, TradeSaleForm, TradeBuyForm, TransactionForm
 from . import utils
 import datetime
+from django.utils import timezone
 from django.http import JsonResponse
 import json
 
@@ -72,7 +73,7 @@ def register(request):
     else:
         return render(request, "tf2folio/register.html")
 
-
+@login_required
 def new_item(request):
     if request.method == "POST":
         form = ItemForm(request.POST)
@@ -91,7 +92,7 @@ def new_item(request):
         "form": ItemForm()
     })
     
-
+@login_required
 def new_trade(request):
     if request.method == "POST":
         pass
@@ -101,7 +102,7 @@ def new_trade(request):
         "item_form": ItemForm()
     })
 
-
+@login_required
 def register_item(request):
 
     if request.method != "POST":
@@ -151,12 +152,20 @@ def register_trade(request):
     if request.method != "POST":
         return JsonResponse({"error": "POST request required."}, status=400)
 
+    # Get the items selected in the form
     item_ids = json.loads(request.POST['itemIds'])
-    item_list = []
+    item_recieved_ids = json.loads(request.POST['itemRecievedIds'])
+    item_list, item_recieved_list = [], []
     for item_id in item_ids:
         try:
             item = Item.objects.get(pk=item_id)
             item_list.append(item)
+        except Item.DoesNotExist:
+            return JsonResponse({"error": "Item not found."}, status=404)
+    for item_id in item_recieved_ids:
+        try:
+            item = Item.objects.get(pk=item_id)
+            item_recieved_list.append(item)
         except Item.DoesNotExist:
             return JsonResponse({"error": "Item not found."}, status=404)
 
@@ -164,7 +173,7 @@ def register_trade(request):
     if form.is_valid():
         obj = form.save(commit=False)
         obj.owner = request.user
-        obj.date = datetime.datetime.now()
+        obj.date = timezone.now()
 
         obj.save() # Save the object to generate an id
 
@@ -172,6 +181,10 @@ def register_trade(request):
             if obj.transaction_type == "sale":
                 obj.items_sold.add(item)
             elif obj.transaction_type == "buy":
+                obj.items_bought.add(item)
+        
+        if obj.transaction_type == "sale" and item_recieved_list != []:
+            for item in item_recieved_list:
                 obj.items_bought.add(item)
 
         obj.save() # Save the changes to the many-to-many fields

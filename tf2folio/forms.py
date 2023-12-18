@@ -17,7 +17,7 @@ class TransactionForm(ModelForm):
 
 class TradeSaleForm(TransactionForm):
     class Meta(TransactionForm.Meta):
-        fields = TransactionForm.Meta.fields + ["items_sold"]
+        fields = TransactionForm.Meta.fields + ["items_sold"] + ["items_bought"]
 
 class TradeBuyForm(TransactionForm):
     class Meta(TransactionForm.Meta):
