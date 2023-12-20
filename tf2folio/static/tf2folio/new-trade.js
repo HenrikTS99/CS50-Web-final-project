@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const itemsSoldDropdown = document.querySelector('#id_items_sold');
     const itemsBoughtDropdown = document.querySelector('#id_items_bought');
     const tradeSubmitButton = document.querySelector('#trade-submit-button');
+    const itemValueDropDown = document.querySelector('#id_item_value-0-transaction_method');
 
     saleButton.addEventListener('click', () => sale_form());
     buyButton.addEventListener('click', () => buy_form());
@@ -25,6 +26,10 @@ document.addEventListener('DOMContentLoaded', function() {
         item_selection.addEventListener('dblclick', (event) => {
             addItemToSelectedItems(event, 'bought')
         });
+    });
+
+    itemValueDropDown.addEventListener('change', () => {
+        toggleCurrencyDisplay();
     });
     
     // add new item
@@ -179,4 +184,18 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
         })
     }
+    function toggleCurrencyDisplay() {
+        const currencyLabel = document.querySelector("label[for='id_item_value-0-currency']");
+        if (itemValueDropDown.value == 'keys') {
+            document.querySelector('#id_item_value-0-currency').style.display = 'none';
+            currencyLabel.style.display = 'none';
+        } else {
+            document.querySelector('#id_item_value-0-currency').style.display = 'block';
+            currencyLabel.style.display = 'block';
+        }
+    }
+    toggleCurrencyDisplay()
+    
 });
+
+

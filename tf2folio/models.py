@@ -2,6 +2,20 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 import pycountry
 
+TRANSACTION_CHOICES = [
+    ('buy', 'Buy'),
+    ('sale', 'Sale')
+]
+
+SELL_METHOD_CHOICES = [
+    ('keys', 'Keys'),
+    ('scm_funds', 'Steam Wallet Funds'),
+    ('paypal', 'PayPal')
+]
+
+CURRENCY_CHOICES = [
+    (currency.alpha_3, currency.alpha_3) for currency in pycountry.currencies]
+
 # Create your models here.
 
 class User(AbstractUser):
@@ -48,33 +62,33 @@ class Item(models.Model):
     particle_id = models.CharField(max_length=4, blank=True, null=True)
     description = models.TextField(max_length=400, null=True, blank=True)
     killstreak = models.CharField(max_length=20, choices=KILLSTREAK_TIERS, null=True, blank=True)
-    # date_arrived = models.DateTimeField(null=True, blank=True)
-    # date_sold = models.DateTimeField(null=True, blank=True)
+    sold = models.BooleanField(default=False)
     image_url = models.URLField(max_length=400, null=True, blank=True)
+    estimated_price = models.OneToOneField('Value', on_delete=models.CASCADE, related_name="estimated_item_value", default=None, null=True, blank=True)
+    sale_price = models.OneToOneField('Value', on_delete=models.CASCADE, related_name="sold_item_value", default=None, null=True, blank=True)
 
     def __str__(self):
         return f"{self.item_title}"
 
 
+class Value(models.Model):
+
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="item_value", default=None)
+    transaction_method = models.CharField(max_length=30, choices=SELL_METHOD_CHOICES, default=('keys', 'Keys'))
+    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    def __str__(self):
+        currency = self.currency if self.currency else ""
+        return f"{self.item.item_title} - {self.amount} {self.transaction_method} {currency}"
+
+
 class Transaction(models.Model):
-    TRANSACTION_CHOICES = [
-        ('buy', 'Buy'),
-        ('sale', 'Sale')
-    ]
+    TRANSACTION_METHOD_CHOICES = SELL_METHOD_CHOICES + [('items', 'TF2 Items')]
 
-    SELL_METHOD_CHOICES = [
-        ('keys', 'Keys'),
-        ('scm_funds', 'Steam Wallet Funds'),
-        ('paypal', 'PayPal'),
-        ('items', 'TF2 Items')
-    ]
-
-    CURRENCY_CHOICES = [
-        (currency.alpha_3, currency.alpha_3) for currency in pycountry.currencies]
-    
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name= "user_transactions", default=None)
     transaction_type = models.CharField(max_length=4, choices=TRANSACTION_CHOICES)
-    transaction_method = models.CharField(max_length=30, choices=SELL_METHOD_CHOICES)
+    transaction_method = models.CharField(max_length=30, choices=TRANSACTION_METHOD_CHOICES)
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     items_sold = models.ManyToManyField('Item', blank=True, related_name="sales_transactions")
@@ -86,7 +100,8 @@ class Transaction(models.Model):
         items_sold_titles = ", ".join([str(item) for item in self.items_sold.all()])
         items_bought_titles = ", ".join([str(item) for item in self.items_bought.all()])
         currency = self.currency if self.currency else ""
+        amount = self.amount if self.amount else ""
         if self.transaction_type == "sale":
-            return f"{self.owner} sold {items_sold_titles} for {self.amount} {self.transaction_method} {currency} {items_bought_titles} on {self.date}"
-        return f"{self.owner} bought {items_bought_titles} for {self.amount} {self.transaction_method} {currency} on {self.date}"
+            return f"{self.owner} sold {items_sold_titles} for {amount} {self.transaction_method} {currency} {items_bought_titles} on {self.date}"
+        return f"{self.owner} bought {items_bought_titles} for {amount} {self.transaction_method} {currency} on {self.date}"
 

@@ -6,6 +6,8 @@
         <form id="item-register-form" class="item-form" action="{% url 'new_item' %}" method="POST">
             {% csrf_token %}
             {{item_form}}
+            <h4>Estimated Item Value</h4>
+            {{value_form}}
             <button type="submit" class="btn btn-primary">Register Item</button>
         </form>
     </div>

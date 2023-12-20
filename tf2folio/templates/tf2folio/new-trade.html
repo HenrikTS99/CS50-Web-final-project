@@ -24,6 +24,7 @@
                 {{sale_form.transaction_method}}
                 <label for="{{ sale_form.amount.id_for_label }}">Amount:</label>
                 {{sale_form.amount}}
+                
                 <label for="{{ sale_form.currency.id_for_label }}">Currency:</label>
                 <input type="text" name="currency" list="currencies" />
                     <datalist id="currencies">
@@ -44,7 +45,6 @@
         </form>
 
 
-
         <form class="item-form" id="buy-form">
             {% csrf_token %}
             <div class="form-rows">
@@ -55,8 +55,10 @@
 
                 <label for="{{ buy_form.transaction_method.id_for_label }}">Transaction Method:</label>
                 {{buy_form.transaction_method}}
+
                 <label for="{{ buy_form.amount.id_for_label }}">Amount:</label>
                 {{buy_form.amount}}
+
                 <label for="{{ buy_form.currency.id_for_label }}">Currency:</label>
                 <input type="text" name="currency" list="currencies" />
                     <datalist id="currencies">
@@ -64,8 +66,10 @@
                             <option value="{{ currency.0 }}">{{ currency.1 }}</option>
                         {% endfor %}
                     </datalist>
+
                 <label for="{{ buy_form.description.id_for_label }}">Description:</label>
                 {{buy_form.description}}
+
             </div>
             <button type="submit" form="buy-form" id="trade-submit-button" class="btn btn-primary">Register Purchase</button>
         </form>
