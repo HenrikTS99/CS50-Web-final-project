@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const itemsBoughtDropdown = document.querySelector('#id_items_bought');
     const tradeSubmitButton = document.querySelector('#trade-submit-button');
     const itemValueDropDown = document.querySelector('#id_item_value-0-transaction_method');
+    const transactionMethodDropdown = document.querySelector('#id_transaction_method');
+    
 
     saleButton.addEventListener('click', () => sale_form());
     buyButton.addEventListener('click', () => buy_form());
@@ -31,6 +33,12 @@ document.addEventListener('DOMContentLoaded', function() {
     itemValueDropDown.addEventListener('change', () => {
         toggleCurrencyDisplay();
     });
+
+    transactionMethodDropdown.addEventListener('change', () => {
+        console.log("Transaction method changed")
+        handleTransactionChange();
+    });
+
     
     // add new item
     document.querySelectorAll('.add-item').forEach(button => {
@@ -194,8 +202,35 @@ document.addEventListener('DOMContentLoaded', function() {
             currencyLabel.style.display = 'block';
         }
     }
-    toggleCurrencyDisplay()
+    toggleCurrencyDisplay();
     
+
+    function handleTransactionChange() {
+        const amountField = document.querySelector('#id_amount');
+        const amountLabel = document.querySelector("label[for='id_amount']");
+        const currencyField = document.querySelector('input[name="currency"]');
+        const currencyLabel = document.querySelector("label[for='id_currency']");
+        const transactionMethod = transactionMethodDropdown.value;
+
+        function setDisplayAndValue(displayValue, fieldValue = '') {
+            amountField.style.display = displayValue;
+            amountLabel.style.display = displayValue;
+            amountField.value = fieldValue;
+            currencyField.style.display = displayValue;
+            currencyLabel.style.display = displayValue;
+            currencyField.value = fieldValue;
+        }
+        if (transactionMethod == 'paypal' || transactionMethod == 'scm_funds') {
+            setDisplayAndValue('block');
+        } else if (transactionMethod == 'keys') {
+            setDisplayAndValue('block');
+            currencyField.style.display = 'none';
+            currencyLabel.style.display = 'none';
+        } else {
+            setDisplayAndValue('none');
+        }
+    }
+    handleTransactionChange();
 });
 
 

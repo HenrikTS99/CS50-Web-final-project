@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.http import JsonResponse
 import json
 import requests
+from decimal import Decimal, ROUND_DOWN
 
 
 
@@ -100,7 +101,7 @@ def new_trade(request):
 
     return render(request, "tf2folio/new-trade.html", {
         "sale_form": TradeSaleForm(owner=request.user), "buy_form": TradeBuyForm(owner=request.user), 
-        "item_form": ItemForm(), "value_form": ItemValueFormset()
+        "item_form": ItemForm(), "value_form": ItemValueFormset(owner=request.user)
     })
 
 @login_required
@@ -241,24 +242,38 @@ def check_parent_item(item):
             print(f'item_sale_values: {item_sale_price_objects}')
             # check if cash in trade, if so, create Value object
             if origin_trade.amount:
-                item_sale_price_objects.append(Value.objects.create(item=parent_item, transaction_method=origin_trade.transaction_method, currency=origin_trade.currency, amount=origin_trade.amount))
-            parent_item.sale_price = calculate_total_sale_price(item_sale_price_objects)
+                item_sale_price_objects.append(Value(item=parent_item, transaction_method=origin_trade.transaction_method, currency=origin_trade.currency, amount=origin_trade.amount))
+            parent_item.sale_price = calculate_total_sale_price(item_sale_price_objects, parent_item)
             parent_item.save()
             print(f'{parent_item.item_title} sale price: {parent_item.sale_price}')
 
 
 
 
-def calculate_total_sale_price(value_objects):
+def calculate_total_sale_price(value_objects, item):
     if all(value_object.transaction_method == value_objects[0].transaction_method for value_object in value_objects):
         # all the same transaction method
         print("Same transaction method")
-        return Value.objects.create(item=value_objects[0].item, transaction_method=value_objects[0].transaction_method, 
+        print(value_objects[0].transaction_method)
+        return Value.objects.create(item=item, transaction_method=value_objects[0].transaction_method, 
                 currency=value_objects[0].currency, amount=sum([value_object.amount for value_object in value_objects]))
-        
     else:
         # implement the currency conversion and get key price.
-        pass
+        key_amount = 0
+        for value_object in value_objects:
+            print(f'value_object: {value_object}')
+            if value_object.transaction_method == "keys":
+                key_amount += value_object.amount
+            elif value_object.transaction_method == "paypal":
+                if value_object.currency != 'USD':
+                    value_object.amount = convert_currency(value_object.amount, value_object.currency)
+                key_amount += get_key_price(value_object.amount, value_object.transaction_method)
+
+            elif value_object.transaction_method == "scm_funds":
+                if value_object.currency != 'USD':
+                    value_object.amount = convert_currency(value_object.amount, value_object.currency)
+                key_amount += get_key_price(value_object.amount, value_object.transaction_method)
+        return Value.objects.create(item=item, transaction_method='keys', amount=key_amount)
 
 USD_KEY_PRICES = {
     'scm_funds': 2.2,
@@ -266,14 +281,16 @@ USD_KEY_PRICES = {
 }
 
 def convert_currency(amount, from_currency, to_currency='USD'):
-
     url = f'https://api.exchangerate-api.com/v4/latest/{to_currency}'
     response = requests.get(url)
     data = response.json()
-    return amount/data['rates'][from_currency]
+    return Decimal(amount/Decimal(data['rates'][from_currency]))
 
-def get_key_price(currency, transaction_method):
-    return currency/USD_KEY_PRICES[transaction_method]
+def get_key_price(amount_usd, transaction_method):
+    key_price = Decimal(amount_usd)/Decimal(USD_KEY_PRICES[transaction_method])
+    key_price =  key_price.quantize(Decimal('.00'), rounding=ROUND_DOWN)
+    print(f'key_price: {key_price} from {amount_usd} USD')
+    return key_price
                         
 
         

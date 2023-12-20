@@ -21,6 +21,8 @@ CURRENCY_CHOICES = [
 class User(AbstractUser):
     items = models.ManyToManyField('Item', blank=True, related_name="item_owner")
     transactions = models.ManyToManyField('Transaction', blank=True, related_name="transaction_owner")
+    default_scm_currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='USD', null=True, blank=True)
+    default_paypal_currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='USD', null=True, blank=True)
 
 class Item(models.Model):
 
@@ -64,8 +66,8 @@ class Item(models.Model):
     killstreak = models.CharField(max_length=20, choices=KILLSTREAK_TIERS, null=True, blank=True)
     sold = models.BooleanField(default=False)
     image_url = models.URLField(max_length=400, null=True, blank=True)
-    estimated_price = models.OneToOneField('Value', on_delete=models.CASCADE, related_name="estimated_item_value", default=None, null=True, blank=True)
-    sale_price = models.OneToOneField('Value', on_delete=models.CASCADE, related_name="sold_item_value", default=None, null=True, blank=True)
+    estimated_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="estimated_item_value", default=None, null=True, blank=True)
+    sale_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="sold_item_value", default=None, null=True, blank=True)
 
     def __str__(self):
         return f"{self.item_title}"
@@ -88,8 +90,8 @@ class Transaction(models.Model):
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name= "user_transactions", default=None)
     transaction_type = models.CharField(max_length=4, choices=TRANSACTION_CHOICES)
-    transaction_method = models.CharField(max_length=30, choices=TRANSACTION_METHOD_CHOICES)
-    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, null=True, blank=True)
+    transaction_method = models.CharField(max_length=30, choices=TRANSACTION_METHOD_CHOICES, default=('keys', 'Keys'))
+    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES,  null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     items_sold = models.ManyToManyField('Item', blank=True, related_name="sales_transactions")
     items_bought = models.ManyToManyField('Item', blank=True, related_name="buys_transactions")
