@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const itemsBoughtDropdown = document.querySelector('#id_items_bought');
     const tradeSubmitButton = document.querySelector('#trade-submit-button');
     const itemValueDropDown = document.querySelector('#id_item_value-0-transaction_method');
-    const transactionMethodDropdown = document.querySelector('#id_transaction_method');
+    const transactionMethodDropdowns = document.querySelectorAll('.transaction-method');
     
 
     saleButton.addEventListener('click', () => sale_form());
@@ -30,16 +30,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    itemValueDropDown.addEventListener('change', () => {
-        toggleCurrencyDisplay();
+    transactionMethodDropdowns.forEach(dropdown => {
+        dropdown.addEventListener('change', () => {
+            handleTransactionChange(dropdown.value);
+        });
     });
 
-    transactionMethodDropdown.addEventListener('change', () => {
-        console.log("Transaction method changed")
-        handleTransactionChange();
-    });
-
-    
     // add new item
     document.querySelectorAll('.add-item').forEach(button => {
         button.addEventListener('click', () => register_item(button));
@@ -168,69 +164,107 @@ document.addEventListener('DOMContentLoaded', function() {
             itemRecievedIds.push(itemId);
         });
 
-        console.log(itemIds);
-        console.log(itemRecievedIds);
-
         const formData = new FormData(event.target);
         // add transaction type
         formData.append('transaction_type', transaction_type);
         formData.append('itemIds', JSON.stringify(itemIds));
         formData.append('itemRecievedIds', JSON.stringify(itemRecievedIds));
         console.log(formData);
+        formData.set('currency', formData.get('currency').toUpperCase());
         fetch('/register_trade', {
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errors => {
+                    throw errors;
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             console.log("Data sent sucsessfully", data);
             tradeRegisterSection.insertAdjacentHTML('afterbegin', data.transaction_html);
-            console.log(data.transaction_html);
             window.location.href = data.redirect_url;
         })
-        .catch(error => {
-            console.error('Error:', error);
-        })
+        .catch(errors => {
+            console.error('Server errors:', errors);
+            displayErrors(errors);
+        });
     }
-    function toggleCurrencyDisplay() {
-        const currencyLabel = document.querySelector("label[for='id_item_value-0-currency']");
-        if (itemValueDropDown.value == 'keys') {
-            document.querySelector('#id_item_value-0-currency').style.display = 'none';
-            currencyLabel.style.display = 'none';
+
+    function displayErrors(errors) {
+        console.log(errors);
+        const errorElement = document.getElementById('trade-register-error');
+        errorElement.innerHTML = '';
+        errorElement.style.display = 'block';
+
+        if (errors.error) {
+            // handle JsonResponse error message
+            let errorDiv = document.createElement('div');
+            errorDiv.textContent = errors.error;
+            errorElement.appendChild(errorDiv);
         } else {
-            document.querySelector('#id_item_value-0-currency').style.display = 'block';
-            currencyLabel.style.display = 'block';
+            // handle form errors
+            for (let field in errors.errors) {
+                let fieldErrors = errors.errors[field];
+                for (let error of fieldErrors) {
+                    let errorDiv = document.createElement('div');
+                    errorDiv.textContent = `${field}: ${error}`;
+                    errorElement.appendChild(errorDiv);
+                }
+            }
         }
     }
-    toggleCurrencyDisplay();
-    
 
-    function handleTransactionChange() {
-        const amountField = document.querySelector('#id_amount');
-        const amountLabel = document.querySelector("label[for='id_amount']");
-        const currencyField = document.querySelector('input[name="currency"]');
-        const currencyLabel = document.querySelector("label[for='id_currency']");
-        const transactionMethod = transactionMethodDropdown.value;
+
+    function handleTransactionChange(transactionMethod) {
+        const amountFields = document.querySelectorAll('.amount-field');
+        const amountLabels = document.querySelectorAll(".amount-label");
+        const currencyFields = document.querySelectorAll('.currency-field');
+        const currencyLabels = document.querySelectorAll(".currency-label");
+        const defaultSCMCurrency = document.querySelector('#default-scm-currency').value;
+        const defaultPaypalCurrency = document.querySelector('#default-paypal-currency').value;
 
         function setDisplayAndValue(displayValue, fieldValue = '') {
-            amountField.style.display = displayValue;
-            amountLabel.style.display = displayValue;
-            amountField.value = fieldValue;
-            currencyField.style.display = displayValue;
-            currencyLabel.style.display = displayValue;
-            currencyField.value = fieldValue;
+            amountFields.forEach((field, index) => {
+                field.style.display = displayValue;
+                amountLabels[index].style.display = displayValue;
+                field.value = fieldValue;
+                currencyFields[index].style.display = displayValue;
+                currencyLabels[index].style.display = displayValue;
+                currencyFields[index].value = fieldValue;
+                transactionMethodDropdowns[index].value = transactionMethod;
+            });
         }
+
         if (transactionMethod == 'paypal' || transactionMethod == 'scm_funds') {
             setDisplayAndValue('block');
+            if (transactionMethod == 'paypal') {
+                currencyFields.forEach(field => {
+                    field.value = defaultPaypalCurrency;
+                });
+            } else if (transactionMethod == 'scm_funds') {
+                currencyFields.forEach(field => {
+                    field.value = defaultSCMCurrency;
+                });
+            }
         } else if (transactionMethod == 'keys') {
             setDisplayAndValue('block');
-            currencyField.style.display = 'none';
-            currencyLabel.style.display = 'none';
-        } else {
+            currencyFields.forEach(field => {
+                field.style.display = 'none';
+            });
+        } else if (transactionMethod == 'items') {
+            // Item value dosent have transactionMethod items, default to keys
             setDisplayAndValue('none');
+            document.querySelector('#id_item_value-0-transaction_method').value = 'keys';
+            document.getElementById('id_item_value-0-amount').style.display = 'block';
+            document.querySelector("label[for='id_item_value-0-amount']").style.display = 'block';
         }
     }
-    handleTransactionChange();
+    // Start with the first transaction method dropdown
+    handleTransactionChange(transactionMethodDropdowns[0].value);
 });
 
 

@@ -101,7 +101,8 @@ def new_trade(request):
 
     return render(request, "tf2folio/new-trade.html", {
         "sale_form": TradeSaleForm(owner=request.user), "buy_form": TradeBuyForm(owner=request.user), 
-        "item_form": ItemForm(), "value_form": ItemValueFormset(owner=request.user)
+        "item_form": ItemForm(), "value_form": ItemValueFormset(owner=request.user),
+        "user": request.user
     })
 
 @login_required
@@ -109,7 +110,6 @@ def register_item(request):
 
     if request.method != "POST":
         return JsonResponse({"error": "POST request required."}, status=400)
-
     form = ItemForm(request.POST)
     formset = ItemValueFormset(request.POST, instance=form.instance)
     if form.is_valid():
@@ -121,13 +121,17 @@ def register_item(request):
         if obj.particle_effect:
             obj.particle_id = utils.get_particle_id(obj.particle_effect)
         obj.save()
-    if formset.is_valid():
-        instances = formset.save(commit=False)
-        for instance in instances:
-            instance.item = obj
-            instance.save()
-            obj.estimated_price = instance
-            obj.save()
+
+        if formset.is_valid():
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.item = obj
+                instance.save()
+                obj.estimated_price = instance
+                obj.save()
+                print('value formset saved')
+        else:
+            print(formset.errors)
 
         item_html = render_to_string('tf2folio/item-template.html', {'item': obj })
 
@@ -165,18 +169,24 @@ def register_trade(request):
     item_ids = json.loads(request.POST['itemIds'])
     item_recieved_ids = json.loads(request.POST['itemRecievedIds'])
     item_list, item_recieved_list = [], []
+
     for item_id in item_ids:
         try:
             item = Item.objects.get(pk=item_id)
             item_list.append(item)
         except Item.DoesNotExist:
             return JsonResponse({"error": "Item not found."}, status=404)
+    if item_list == []:
+        return JsonResponse({"error": "No items selected."}, status=404)
+
     for item_id in item_recieved_ids:
         try:
             item = Item.objects.get(pk=item_id)
             item_recieved_list.append(item)
         except Item.DoesNotExist:
             return JsonResponse({"error": "Item not found."}, status=404)
+    if item_recieved_list == [] and request.POST['transaction_method'] == "items":
+        return JsonResponse({"error": "No items recieved in item trade."}, status=404)
 
     form = TransactionForm(request.POST)
     if form.is_valid():
@@ -188,6 +198,7 @@ def register_trade(request):
 
         for item in item_list:
             item.sold = True
+            item.save()
             if obj.transaction_type == "sale":
                 obj.items_sold.add(item)
             elif obj.transaction_type == "buy":
@@ -209,7 +220,6 @@ def register_trade(request):
             # find the original transaction that item came from
             check_parent_item(item)
            
-
         transaction_html = render_to_string('tf2folio/transaction-template.html', {'transaction': obj })
         response_data = {
             "message": "Data sent successfully.",
@@ -219,7 +229,7 @@ def register_trade(request):
         }
         return JsonResponse(response_data, status=201)
     print(form.errors)
-    return JsonResponse({"message": "Invalid form data."}, status=400)
+    return JsonResponse({"errors": form.errors}, status=400)
 
 
 def check_parent_item(item):
@@ -246,6 +256,8 @@ def check_parent_item(item):
             parent_item.sale_price = calculate_total_sale_price(item_sale_price_objects, parent_item)
             parent_item.save()
             print(f'{parent_item.item_title} sale price: {parent_item.sale_price}')
+            # check if parent item has a parent item
+            check_parent_item(parent_item)
 
 
 
