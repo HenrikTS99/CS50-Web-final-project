@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
@@ -101,39 +102,25 @@ def new_trade(request):
         "user": request.user
     })
 
+
+@require_POST
 @login_required
 def register_item(request):
-
-    if request.method != "POST":
-        return JsonResponse({"error": "POST request required."}, status=400)
     form = ItemForm(request.POST)
     formset = ItemValueFormset(request.POST, instance=form.instance)
-    if form.is_valid():
-        obj = form.save(commit=False)
-        obj.owner = request.user
-        obj.date = datetime.date.today()
-        obj.item_title = utils.create_title(obj)
-        obj.image_url = utils.create_image(obj)
-        if obj.particle_effect:
-            obj.particle_id = utils.get_particle_id(obj.particle_effect)
-        obj.save()
 
+    if form.is_valid():
+        item = utils.save_item(form, request.user)
         if formset.is_valid():
-            instances = formset.save(commit=False)
-            for instance in instances:
-                instance.item = obj
-                instance.save()
-                obj.estimated_price = instance
-                obj.save()
-                print('value formset saved')
+            utils.add_estimated_price_to_item(formset, item)
         else:
             print(formset.errors)
 
-        item_html = render_to_string('tf2folio/item-template.html', {'item': obj })
+        item_html = render_to_string('tf2folio/item-template.html', {'item': item })
 
         response_data = {
             "message": "Data sent successfully.",
-            "item_id": obj.id,
+            "item_id": item.id,
             "item_html": item_html
         }
         return JsonResponse(response_data, status=201)

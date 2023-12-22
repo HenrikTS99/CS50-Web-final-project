@@ -5,6 +5,8 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from decimal import Decimal, ROUND_DOWN
 import time
+from django.http import JsonResponse
+import datetime
 
 PARTICLE_EFFECTS_MAPPING = {
     '4': 'Community Sparkle',
@@ -562,6 +564,28 @@ def get_particle_id(particle_effect):
     return None
 
 
+def save_item(form, user):
+    item = form.save(commit=False)
+    item.owner = user
+    item.date = datetime.date.today()
+    item.item_title = create_title(item)
+    item.image_url = create_image(item)
+    if item.particle_effect:
+        item.particle_id = get_particle_id(item.particle_effect)
+    item.save()
+    return item
+
+
+def add_estimated_price_to_item(formset, item):
+    instances = formset.save(commit=False)
+    for instance in instances:
+        instance.item = item
+        instance.save()
+        item.estimated_price = instance
+        item.save()
+        print('value formset saved')
+        
+
 # New trade functions
 def create_item_lists(item_ids):
     item_list = []
@@ -695,6 +719,7 @@ def convert_currency(amount, from_currency, to_currency='USD'):
     except KeyError:
         print(f'KeyError: {from_currency} not found in response data')
     return None
+
 
 def get_key_price(amount_usd, transaction_method):
     key_price = Decimal(amount_usd)/Decimal(USD_KEY_PRICES[transaction_method])

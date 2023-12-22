@@ -69,6 +69,7 @@ class Item(models.Model):
     estimated_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="estimated_item_value", default=None, null=True, blank=True)
     sale_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="sold_item_value", default=None, null=True, blank=True)
 
+        
     def add_sale_price(self, value_object):
         self.sale_price = value_object
         self.save()
