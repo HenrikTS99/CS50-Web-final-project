@@ -69,6 +69,10 @@ class Item(models.Model):
     estimated_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="estimated_item_value", default=None, null=True, blank=True)
     sale_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="sold_item_value", default=None, null=True, blank=True)
 
+    def add_sale_price(self, value_object):
+        self.sale_price = value_object
+        self.save()
+
     def __str__(self):
         return f"{self.item_title}"
 
@@ -79,6 +83,10 @@ class Value(models.Model):
     transaction_method = models.CharField(max_length=30, choices=SELL_METHOD_CHOICES, default=('keys', 'Keys'))
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    @classmethod
+    def create_for_item(cls, item, transaction_method, currency, amount):
+        return cls.objects.create(item=item, transaction_method=transaction_method, currency=currency, amount=amount)
 
     def __str__(self):
         currency = self.currency if self.currency else ""
@@ -97,6 +105,23 @@ class Transaction(models.Model):
     items_bought = models.ManyToManyField('Item', blank=True, related_name="buys_transactions")
     description = models.TextField(max_length=400, null=True, blank=True)
     date = models.DateTimeField(null=True, blank=True)
+
+    def add_item(self, item):
+        if self.transaction_type == "sale":
+            self.items_sold.add(item)
+            item.sold = True
+            item.save()
+        else:
+            self.items_bought.add(item)
+
+    def add_items(self, item_list, item_recieved_list):
+        for item in item_list:
+            self.add_item(item)
+        if self.transaction_type == "sale" and item_recieved_list:
+            for item in item_recieved_list:
+                self.items_bought.add(item)
+        self.save()
+        
 
     def __str__(self):
         items_sold_titles = ", ".join([str(item) for item in self.items_sold.all()])

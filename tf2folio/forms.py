@@ -46,6 +46,7 @@ class BaseItemValueFormSet(forms.BaseInlineFormSet):
 
         for instance in instances:
             if instance.amount is None:
+                # should only ever be one form in the formset, therefore only one instance
                 print("amount is none")
                 return []
             if instance.transaction_method not in ['scm_funds', 'paypal'] and instance.currency:

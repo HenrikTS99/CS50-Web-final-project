@@ -1,4 +1,11 @@
 import requests
+import json
+from .models import Item, Value, Transaction
+from django.template.loader import render_to_string
+from django.urls import reverse
+from decimal import Decimal, ROUND_DOWN
+import time
+
 PARTICLE_EFFECTS_MAPPING = {
     '4': 'Community Sparkle',
     '5': 'Holy Glow',
@@ -479,7 +486,12 @@ PARTICLE_EFFECTS_MAPPING = {
 
 REVERSE_PARTICLE_MAPPING = {v: k for k, v in PARTICLE_EFFECTS_MAPPING.items()}
 
+USD_KEY_PRICES = {
+    'scm_funds': 2.2,
+    'paypal': 1.7
+}
 
+conversion_rates_cache = {}
 
 def create_title(Item):
     title_parts = []
@@ -549,3 +561,143 @@ def get_particle_id(particle_effect):
             particle_effect = particle_effect.title()
     return None
 
+
+# New trade functions
+def create_item_lists(item_ids):
+    item_list = []
+    for item_id in item_ids:
+        try:
+            item = Item.objects.get(pk=item_id)
+            item_list.append(item)
+        except Item.DoesNotExist:
+            return JsonResponse({"error": "Item not found."}, status=404)
+    return item_list
+
+
+def process_items(request):
+    item_ids = json.loads(request.POST['itemIds'])
+    item_recieved_ids = json.loads(request.POST['itemRecievedIds'])
+
+    item_list = create_item_lists(item_ids)
+    if item_list == []:
+        return None, None, JsonResponse({"error": "No items selected."}, status=404)
+
+    item_recieved_list = create_item_lists(item_recieved_ids)
+    # item trades need items recieved
+    if item_recieved_list == [] and request.POST['transaction_method'] == "items":
+        return None, None, JsonResponse({"error": "No items recieved in item trade."}, status=404)
+    
+    return item_list, item_recieved_list, None
+
+
+def create_trade_response_data(trade):
+    transaction_html = render_to_string('tf2folio/transaction-template.html', {'transaction': trade })
+    return {
+        "message": "Data sent successfully.",
+        "transaction_id": trade.id,
+        "transaction_html": transaction_html,
+        "redirect_url": reverse("trade_history")
+    }
+
+
+# Functions for handling  pure sales
+def process_pure_sale(item, trade):
+    value = Value.create_for_item(item=item, transaction_method=trade.transaction_method, 
+                    currency=trade.currency, amount=trade.amount)
+    item.add_sale_price(value)
+    print(f'{item.item_title} sale price: {item.sale_price}')
+    # find the original transaction and item that item came from
+    parent_item, origin_trade = get_parent_item_and_origin_trade(item)
+    if parent_item and origin_trade:
+        process_parent_item(parent_item, origin_trade)
+
+
+def get_parent_item_and_origin_trade(item):
+    origin_trade = None
+    try:
+        origin_trade = Transaction.objects.get(items_bought=item)
+        print(f'origin trade:{origin_trade}')
+    except Transaction.DoesNotExist:
+        print(f"No origin trade found for {item}.")
+    except Transaction.MultipleObjectsReturned:
+        print("Multiple origin trades found for this item, but there should only be one.")
+
+    if not origin_trade or origin_trade.transaction_type != "sale":
+        # Purchase transactions can't have a parent item
+        return
+    parent_item = origin_trade.items_sold.all()
+    if len(parent_item) == 1:
+        return parent_item[0], origin_trade
+    return None
+
+
+def process_parent_item(parent_item, origin_trade):
+    item_sale_price_objects = []
+    for item in origin_trade.items_bought.all():
+        if not item.sale_price:
+            print(f'{item.item_title} not sold yet.')
+            return 
+        item_sale_price_objects.append(item.sale_price)
+
+    # check if cash/keys in trade, if so, create Value object
+    if origin_trade.amount:
+        # Value should not be saved, just used to calculate total sale price
+        value = Value(item=parent_item, transaction_method=origin_trade.transaction_method, 
+                currency=origin_trade.currency, amount=origin_trade.amount)
+        item_sale_price_objects.append(value)
+
+    parent_item.sale_price = get_total_sale_value_object(item_sale_price_objects, parent_item)
+    parent_item.save()
+    print(f'{parent_item.item_title} sale price: {parent_item.sale_price}')
+    # check if parent item has a parent item recursively
+    get_parent_item_and_origin_trade(parent_item)
+    
+
+def get_total_sale_value_object(value_objects, item):
+    # check if all transaction methods are the same, if so add the sums of the amounts and return Value object
+    if all(value_object.transaction_method == value_objects[0].transaction_method for value_object in value_objects):
+        print("Same transaction method:", value_objects[0].transaction_method)
+        return Value.objects.create(item=item, transaction_method=value_objects[0].transaction_method, 
+                currency=value_objects[0].currency, amount=sum([value_object.amount for value_object in value_objects]))
+    else:
+        key_amount = 0
+        for value_object in value_objects:
+            print(f'value_object: {value_object}')
+            if value_object.transaction_method == "keys":
+                key_amount += value_object.amount
+            # Convert currency if needed and get key price. Add to key_amount
+            elif value_object.transaction_method in ["paypal", "scm_funds"]:
+                if value_object.currency != 'USD':
+                    converted_amount = convert_currency(value_object.amount, value_object.currency)
+                    if converted_amount is None:
+                        print ('Error converting currency, skipping this value object')
+                        continue
+                    value_object.amount = converted_amount
+                key_amount += get_key_price(value_object.amount, value_object.transaction_method)
+        return Value.objects.create(item=item, transaction_method='keys', amount=key_amount)
+
+
+def convert_currency(amount, from_currency, to_currency='USD'):
+    if from_currency in conversion_rates_cache and to_currency in conversion_rates_cache[from_currency] and time.time() - conversion_rates_cache[from_currency][to_currency]['time'] < 3600:
+        print(f'Using cached conversion rate for {from_currency} to {to_currency}')
+        return Decimal(amount/Decimal(conversion_rates_cache[from_currency][to_currency]['rate']))
+    try:
+        url = f'https://api.exchangerate-api.com/v4/latest/{to_currency}'
+        response = requests.get(url)
+        data = response.json()
+        if from_currency not in conversion_rates_cache:
+            conversion_rates_cache[from_currency] = {}
+        conversion_rates_cache[from_currency][to_currency] = {'rate': data['rates'][from_currency], 'time': time.time()}
+        print(conversion_rates_cache)
+        return Decimal(amount/Decimal(data['rates'][from_currency]))
+    except requests.exceptions.RequestException as error:
+        print('Error:', error)
+    except KeyError:
+        print(f'KeyError: {from_currency} not found in response data')
+    return None
+
+def get_key_price(amount_usd, transaction_method):
+    key_price = Decimal(amount_usd)/Decimal(USD_KEY_PRICES[transaction_method])
+    key_price =  key_price.quantize(Decimal('.00'), rounding=ROUND_DOWN)
+    print(f'key_price: {key_price} from {amount_usd} USD')
+    return key_price

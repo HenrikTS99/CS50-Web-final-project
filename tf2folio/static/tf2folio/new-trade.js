@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const itemsSoldDropdown = document.querySelector('#id_items_sold');
     const itemsBoughtDropdown = document.querySelector('#id_items_bought');
     const tradeSubmitButton = document.querySelector('#trade-submit-button');
-    const itemValueDropDown = document.querySelector('#id_item_value-0-transaction_method');
     const transactionMethodDropdowns = document.querySelectorAll('.transaction-method');
     
 
