@@ -15,7 +15,7 @@ import json
 import requests
 from django.template.loader import render_to_string
 
-
+@login_required
 def index(request):
     items = request.user.owned_items.all()
     return render(request, "tf2folio/index.html", {
@@ -115,9 +115,7 @@ def register_item(request):
             utils.add_estimated_price_to_item(formset, item)
         else:
             print(formset.errors)
-
         item_html = render_to_string('tf2folio/item-template.html', {'item': item })
-
         response_data = {
             "message": "Data sent successfully.",
             "item_id": item.id,
@@ -126,10 +124,8 @@ def register_item(request):
         return JsonResponse(response_data, status=201)
     return JsonResponse({"message": "Invalid form data."}, status=400)
 
-
+@require_POST
 def get_item_html(request, item_id):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST request required."}, status=400)
     try:
         item = Item.objects.get(pk=item_id)
     except Item.DoesNotExist:

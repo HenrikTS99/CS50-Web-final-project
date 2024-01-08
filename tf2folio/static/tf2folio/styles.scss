@@ -1,0 +1,172 @@
+$colors: (
+  strange: #CF6A32,
+  unusual: #8650AC,
+  unique: #FFD700,
+  genuine: #4D7455,
+  vintage: #476291,
+  collector: #AA0000,
+  haunted: #38F3AB,
+  normal: #B2B2B2,
+  cash: #7b9a6d,
+);
+
+@each $key, $color in $colors {
+  .#{$key} {
+    color: $color;
+  }
+}
+
+@each $key, $color in $colors {
+  .border-#{$key} {
+    border-color: $color;
+  }
+}
+
+
+
+$tf2-font: (
+  family: 'TF2 Build',
+  size: 16px,
+  color: white,
+);
+
+// example of using a mixin
+%class {
+  margin: 20px
+}
+.class-extend {
+  @extend %class;
+  color: red;
+}
+
+.item-form,
+.form-rows {
+  display: grid;
+  justify-content: center;
+}
+
+.center-div {
+  text-align: center;
+}
+
+.item-boxes-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
+  margin: 25px 0;
+}
+
+.item-box {
+  background-color: #3c352e;
+  display: flex;
+  flex-direction: column;
+  justify-content: end; // Center the text vertically
+  align-items: center;
+  margin: 3px 5px;
+  border-radius: 5px;
+  border-width: 3px;
+  border-style: solid;
+  text-align: center;
+  width: 180px;
+  height: 200px;
+  overflow: hidden;
+  position: relative; // Add this to position the text relative to the box
+
+
+  .item-box-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 80%; // Adjust as needed
+    height: 80%; // Adjust as needed
+    margin: auto;
+    object-fit: cover;
+
+    img {
+      width: 100%; // Make the image fill its container
+      height: 100%; // Make the image fill its container
+      object-fit: contain; // Make the image cover its container
+    }
+
+    .item-image {
+      position: relative;
+    }
+    .particle-image {
+      position: absolute;
+    }
+  }
+
+  span {
+    font-family: 'TF2 Build', sans-serif;
+    position: relative; // Position the text relative to the box
+    z-index: 1; // Make the text appear above the image
+  }
+  .pure-amount {
+    font-size: 20px;
+    color: #fff;
+    text-shadow: 0 0 5px #000;
+  }
+}
+
+/* trade display */
+
+.trade-display-container {
+  background-color: #1b2838;
+  padding: 20px;
+  display: grid;
+  grid-gap: 20px;
+  justify-content: center;
+}
+
+.trade {
+  background-color: #131c27;
+  display: block;
+  border-radius: 5px;
+  border-style: solid;
+  border-width: 1px;
+  margin: 10px;
+  padding: 8px;
+  width: 1200px;
+
+  .transaction-titles {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    
+    font-family: map-get($tf2-font, family);
+    font-size: map-get($tf2-font, size);
+    color: map-get($tf2-font, color)
+  }
+
+  .trade-items-container {
+    display: flex;
+    justify-content: space-between;
+    padding:10px;
+    width: 100%;
+    color:grey;
+
+    .trade-icon {
+      left: 50%;
+      top: 50%;
+      font-size: 100px; // adjust size as needed
+    }
+
+    .items-left, .items-right {
+      display: flex;
+      width: 45%;
+      justify-content: center;
+    }
+  }
+  
+  hr {
+    border-color: white;
+    margin: 0 10px 0 10px;
+
+  }
+}
+
+.sold-color {
+  background-color: #571100;
+}

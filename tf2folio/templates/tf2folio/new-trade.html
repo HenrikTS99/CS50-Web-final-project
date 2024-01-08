@@ -7,11 +7,12 @@
         <h2>Register Trade</h2>
         <h4>Selected Items:</h4>
         <div id="selected-items" class="item-boxes-container">
-
         </div>
+
         <h5>Transaction Type</h5>
         <button class="btn btn-sm btn-primary" id="sale">Sale</button>
         <button class="btn btn-sm btn-outline-primary" id="buy">Purchase</button>
+
         <form class="item-form" id="sale-form">
             {% csrf_token %}
             <div class="form-rows">
@@ -48,7 +49,7 @@
             <button type="submit" form="sale-form" id="trade-submit-button" class="btn btn-primary">Register Salse</button>
         </form>
 
-
+        
         <form class="item-form" id="buy-form">
             {% csrf_token %}
             <div class="form-rows">

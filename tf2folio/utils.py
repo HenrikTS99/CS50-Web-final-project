@@ -534,6 +534,8 @@ def create_image(Item):
     elif Item.australium:
         search_name = f'Strange Australium {Item.item_name}'
 
+    elif Item.quality == 'unique':
+        search_name = Item.item_name
     else:
         search_name = f'{Item.quality.title()} {Item.item_name}'
     
