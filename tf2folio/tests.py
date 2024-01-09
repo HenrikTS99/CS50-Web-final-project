@@ -56,7 +56,7 @@ class TransactionTestCase(TestCase):
         )
 
         transaction_value = Value.objects.create(
-            transaction=self, 
+            transaction=transaction_keys, 
             transaction_method='keys', 
             amount=100
             )
