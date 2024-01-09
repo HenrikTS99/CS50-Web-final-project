@@ -105,10 +105,8 @@ class Value(models.Model):
         return cls.objects.create(item=item, transaction_method=transaction_method, currency=currency, amount=amount)
 
     def clean(self):
-        # Call the superclass's clean method to perform default validation
         super().clean()
 
-        # Check if the transaction_method is 'items' and the Value is related to an Item
         if self.transaction_method == 'items' and self.item is not None:
             raise ValidationError("The 'items' transaction method is not allowed for Values related to an Item.")
 
