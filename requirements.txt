@@ -3,3 +3,4 @@ datetime
 requests
 pycountry
 django-compressor
+django_libsass.SassCompiler
