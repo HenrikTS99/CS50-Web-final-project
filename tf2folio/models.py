@@ -10,7 +10,8 @@ TRANSACTION_CHOICES = [
 SELL_METHOD_CHOICES = [
     ('keys', 'Keys'),
     ('scm_funds', 'Steam Wallet Funds'),
-    ('paypal', 'PayPal')
+    ('paypal', 'PayPal'),
+    ('items', 'TF2 Items')
 ]
 
 CURRENCY_CHOICES = [
@@ -67,6 +68,7 @@ class Item(models.Model):
     sold = models.BooleanField(default=False)
     image_url = models.URLField(max_length=400, null=True, blank=True)
     estimated_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="estimated_item_value", default=None, null=True, blank=True)
+    purchase_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="purchase_price_value", default=None, null=True, blank=True)
     sale_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="sold_item_value", default=None, null=True, blank=True)
 
         
@@ -74,13 +76,26 @@ class Item(models.Model):
         self.sale_price = value_object
         self.save()
 
+    def add_purchase_price(self, value_object):
+        self.purchase_price = value_object
+        self.save()
+
+    def profit(self):
+        if self.purchase_price and self.sale_price:
+            profit = self.sale_price.amount - self.purchase_price.amount
+            profit = str(profit).rstrip('0').rstrip('.') if '.' in str(profit) else profit
+            currency = self.purchase_price.currency if self.purchase_price.currency else ""
+            return f'{profit} {currency} {self.purchase_price.get_transaction_method_display()}'
+        return None
+
     def __str__(self):
         return f"{self.item_title}"
 
 
 class Value(models.Model):
 
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="item_value", default=None)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="item_value", null=True, blank=True)
+    transaction = models.ForeignKey('Transaction', on_delete=models.CASCADE, null=True, blank=True)
     transaction_method = models.CharField(max_length=30, choices=SELL_METHOD_CHOICES, default=('keys', 'Keys'))
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -89,31 +104,57 @@ class Value(models.Model):
     def create_for_item(cls, item, transaction_method, currency, amount):
         return cls.objects.create(item=item, transaction_method=transaction_method, currency=currency, amount=amount)
 
+    def clean(self):
+        # Call the superclass's clean method to perform default validation
+        super().clean()
+
+        # Check if the transaction_method is 'items' and the Value is related to an Item
+        if self.transaction_method == 'items' and self.item is not None:
+            raise ValidationError("The 'items' transaction method is not allowed for Values related to an Item.")
+
     def __str__(self):
         currency = self.currency if self.currency else ""
-        return f"{self.item.item_title} - {self.amount} {self.transaction_method} {currency}"
+        belongs_to = self.item.item_title if self.item else self.transaction.transaction_type
+        return f"{belongs_to} - {self.amount} {self.transaction_method} {currency}"
 
 
 class Transaction(models.Model):
     TRANSACTION_METHOD_CHOICES = SELL_METHOD_CHOICES + [('items', 'TF2 Items')]
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name= "user_transactions", default=None)
+    transaction_value = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="transaction_value", default=None, null=True, blank=True)
     transaction_type = models.CharField(max_length=4, choices=TRANSACTION_CHOICES)
-    transaction_method = models.CharField(max_length=30, choices=TRANSACTION_METHOD_CHOICES, default=('keys', 'Keys'))
-    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, null=True, blank=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    # transaction_method = models.CharField(max_length=30, choices=TRANSACTION_METHOD_CHOICES, default=('keys', 'Keys'))
+    # currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, null=True, blank=True)
+    # amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     items_sold = models.ManyToManyField('Item', blank=True, related_name="sales_transactions")
     items_bought = models.ManyToManyField('Item', blank=True, related_name="buys_transactions")
     description = models.TextField(max_length=400, null=True, blank=True)
     date = models.DateTimeField(null=True, blank=True)
+
+    @property
+    def transaction_method(self):
+        return self.transaction_value.transaction_method if self.transaction_value else None
+
+    @property
+    def currency(self):
+        return self.transaction_value.currency if self.transaction_value else None
+
+    @property
+    def amount(self):
+        return self.transaction_value.amount if self.transaction_value else None
 
     def add_item(self, item):
         if self.transaction_type == "sale":
             self.items_sold.add(item)
             item.sold = True
             item.save()
-        else:
+        elif self.transaction_type == "buy":
             self.items_bought.add(item)
+            value = Value.create_for_item(item=item, transaction_method=self.transaction_method, 
+                    currency=self.currency, amount=self.amount)
+            item.add_purchase_price(value)
+            
 
     def add_items(self, item_list, item_recieved_list):
         for item in item_list:
@@ -122,7 +163,9 @@ class Transaction(models.Model):
             for item in item_recieved_list:
                 self.items_bought.add(item)
         self.save()
-        
+    
+    def total_pure_recieved(self):
+        pass
 
     def __str__(self):
         items_sold_titles = ", ".join([str(item) for item in self.items_sold.all()])

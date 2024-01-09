@@ -586,6 +586,15 @@ def add_estimated_price_to_item(formset, item):
         item.estimated_price = instance
         item.save()
         print('value formset saved')
+
+def add_value_to_trade(valueForm, trade):
+    instances = formset.save(commit=False)
+    for instance in instances:
+        instance.transaction = trade
+        instance.save()
+        trade.transaction_value = instance
+        trade.save()
+        print('value formset saved')
         
 
 # New trade functions
@@ -628,8 +637,10 @@ def create_trade_response_data(trade):
 
 # Functions for handling  pure sales
 def process_pure_sale(item, trade):
-    value = Value.create_for_item(item=item, transaction_method=trade.transaction_method, 
-                    currency=trade.currency, amount=trade.amount)
+    print(item)
+    tradeValue = trade.transaction_value
+    value = Value.create_for_item(item=item, transaction_method=tradeValue.transaction_method, 
+                    currency=tradeValue.currency, amount=tradeValue.amount)
     item.add_sale_price(value)
     print(f'{item.item_title} sale price: {item.sale_price}')
     # find the original transaction and item that item came from
@@ -650,11 +661,11 @@ def get_parent_item_and_origin_trade(item):
 
     if not origin_trade or origin_trade.transaction_type != "sale":
         # Purchase transactions can't have a parent item
-        return
+        return None, None
     parent_item = origin_trade.items_sold.all()
     if len(parent_item) == 1:
         return parent_item[0], origin_trade
-    return None
+    return None, None
 
 
 def process_parent_item(parent_item, origin_trade):
@@ -666,11 +677,11 @@ def process_parent_item(parent_item, origin_trade):
         item_sale_price_objects.append(item.sale_price)
 
     # check if cash/keys in trade, if so, create Value object
-    if origin_trade.amount:
+    if origin_trade.transaction_value:
         # Value should not be saved, just used to calculate total sale price
-        value = Value(item=parent_item, transaction_method=origin_trade.transaction_method, 
-                currency=origin_trade.currency, amount=origin_trade.amount)
-        item_sale_price_objects.append(value)
+        #value = Value(item=parent_item, transaction_method=origin_trade.transaction_method, 
+                #currency=origin_trade.currency, amount=origin_trade.amount)
+        item_sale_price_objects.append(origin_trade.transaction_value)
 
     parent_item.sale_price = get_total_sale_value_object(item_sale_price_objects, parent_item)
     parent_item.save()

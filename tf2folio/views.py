@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.db import IntegrityError
 from .models import User, Item, Transaction, Value
-from .forms import ItemForm, TradeSaleForm, TradeBuyForm, TransactionForm, ItemValueFormset
+from .forms import ItemForm, TradeSaleForm, TradeBuyForm, TransactionForm, ItemValueFormset, ValueForm
 from . import utils
 import datetime
 from django.utils import timezone
@@ -98,7 +98,8 @@ def new_trade(request):
 
     return render(request, "tf2folio/new-trade.html", {
         "sale_form": TradeSaleForm(owner=request.user), "buy_form": TradeBuyForm(owner=request.user), 
-        "item_form": ItemForm(), "value_form": ItemValueFormset(owner=request.user),
+        "item_form": ItemForm(), "item_value_form": ItemValueFormset(owner=request.user),
+        "value_form": ValueForm(),
         "user": request.user
     })
 
@@ -140,25 +141,40 @@ def get_item_html(request, item_id):
 
 
 def register_trade(request):
+    print(request.POST)
     if request.method != "POST":
         return JsonResponse({"error": "POST request required."}, status=400)
 
     # Get the items selected in the form
     item_list, item_recieved_list, response, = utils.process_items(request)
+    # Error handling
     if response:
         return response
     
     form = TransactionForm(request.POST)
+    valueForm = ValueForm(request.POST)
     if form.is_valid():
         trade = form.save(commit=False)
         trade.owner = request.user
         trade.date = timezone.now()
+        
         trade.save() # Save the object to generate an id so items can be added to the many-to-many fields
-
+        if valueForm.is_valid():
+            value = valueForm.save(commit=False)
+            value.transaction = trade
+            value.save()
+            trade.transaction_value = value
+            trade.save()
+            #utils.add_estimated_price_to_item(valueForm, trade)
+        #trade.transaction_value = Value.objects.create(transaction=trade, transaction_method=trade.transaction_method, 
+         #       currency=trade.currency, amount=trade.amount)
+        #trade.save()
         trade.add_items(item_list, item_recieved_list) # Add the items to the many-to-many fields
 
         # If one item is sold only for pure, update the item's sale_price/value
-        if len(item_list) == 1 and not item_recieved_list:
+        print(item_recieved_list)
+        if len(item_list) == 1 and not item_recieved_list and request.POST.get('transaction_type') == 'sale':
+            print("logging pure sale")
             utils.process_pure_sale(item_list[0], trade)
         
         response_data = utils.create_trade_response_data(trade)

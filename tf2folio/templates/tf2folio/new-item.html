@@ -1,29 +1,25 @@
-<!-- {% extends "tf2folio/layout.html" %}
-
-{% block body%} -->
-    <div class="center-div">
-        <h2>Register Item</h2>
-        <form id="item-register-form" class="item-form" action="{% url 'new_item' %}" method="POST">
-            {% csrf_token %}
-            {{item_form}}
-            <h4>Estimated Item Value</h4>
-            
-            {{ value_form.management_form }}
-            {% for form in value_form %}
-                <label for="{{ form.transaction_method.id_for_label }}">Transaction Method:</label>
-                {{form.transaction_method}}
-                <label for="{{ form.amount.id_for_label }}" class="amount-label" >Amount:</label>
-                {{form.amount}}
-                {{form.errors}}
-                <label for="{{ form.currency.id_for_label }}" class="currency-label">Currency:</label>
-                <input type="text" name="currency" class="currency-field" list="currencies" />
-                    <datalist id="currencies">
-                        {% for currency in form.fields.currency.choices %}
-                            <option value="{{ currency.0 }}">{{ currency.1 }}</option>
-                        {% endfor %}
-                    </datalist>
-            {% endfor %}
-            <button type="submit" class="btn btn-primary">Register Item</button>
-        </form>
-    </div>
-<!-- {% endblock %} -->
+<div class="center-div">
+    <h2>Register Item</h2>
+    <form id="item-register-form" class="item-form" action="{% url 'new_item' %}" method="POST">
+        {% csrf_token %}
+        {{item_form}}
+        <h4>Estimated Item Value</h4>
+        
+        {{ value_form.management_form }}
+        {% for form in item_value_form %}
+            <label for="{{ form.transaction_method.id_for_label }}">Transaction Method:</label>
+            {{form.transaction_method}}
+            <label for="{{ form.amount.id_for_label }}" class="amount-label" >Amount:</label>
+            {{form.amount}}
+            {{form.errors}}
+            <label for="{{ form.currency.id_for_label }}" class="currency-label">Currency:</label>
+            <input type="text" name="currency" class="currency-field" list="currencies" />
+                <datalist id="currencies">
+                    {% for currency in form.fields.currency.choices %}
+                        <option value="{{ currency.0 }}">{{ currency.1 }}</option>
+                    {% endfor %}
+                </datalist>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Register Item</button>
+    </form>
+</div>

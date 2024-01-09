@@ -74,20 +74,20 @@
                 </div>
             
             {% elif trade.transaction_method == 'scm_funds' %}
-                <div class="item-box border-cash">
+                <div class="item-box border-normal">
                     <div class='item-box-image'>
                         <img class="item-image" src="https://community.cloudflare.steamstatic.com/public/shared/images/responsive/share_steam_logo.png">
                     </div>
                     <span class="pure-amount">{{trade.amount|floatformat}} {{trade.currency}}</span>
-                    <span class="cash">SCM funds</span>
+                    <span class="normal">SCM funds</span>
                 </div>
             {% elif trade.transaction_method == 'paypal' %}
-                <div class="item-box border-cash">
+                <div class="item-box border-normal">
                     <div class='item-box-image'>
                         <img class="item-image" src="https://developer.valvesoftware.com/w/images/thumb/f/f9/Smallcredits.png/300px-Smallcredits.png">
                     </div>
                     <span class="pure-amount">{{trade.amount|floatformat}} {{trade.currency}}</span>
-                    <span class="cash">Cash</span>
+                    <span class="normal">Cash</span>
                 </div>
             {% endif %}
             </div>
@@ -103,20 +103,20 @@
                 </div>
             
             {% elif trade.transaction_method == 'scm_funds' %}
-                <div class="item-box border-cash">
+                <div class="item-box border-normal">
                     <div class='item-box-image'>
                         <img class="item-image" src="https://community.cloudflare.steamstatic.com/public/shared/images/responsive/share_steam_logo.png">
                     </div>
                     <span class="pure-amount">{{trade.amount|floatformat}} {{trade.currency}}</span>
-                    <span class="cash">SCM funds</span>
+                    <span class="normal">SCM funds</span>
                 </div>
             {% elif trade.transaction_method == 'paypal' %}
-                <div class="item-box border-cash">
+                <div class="item-box border-normal">
                     <div class='item-box-image'>
                         <img class="item-image" src="https://developer.valvesoftware.com/w/images/thumb/f/f9/Smallcredits.png/300px-Smallcredits.png">
                     </div>
                     <span class="pure-amount">{{trade.amount|floatformat}} {{trade.currency}}</span>
-                    <span class="cash">Cash</span>
+                    <span class="normal">Cash</span>
                 </div>
             {% endif %}
             </div>
@@ -124,39 +124,47 @@
         </div>
         {% if trade.transaction_type == 'sale' %}
         <div class ="transaction-titles">
-                <h4>Items pure value:</h4>
+                <h4>Purchase price:</h4>
                 <h4>Total pure recieved:</h4>
-            
         </div>
         <hr>
         <div class ="transaction-titles">
             {% for item in trade.items_sold.all %}
-                {% if item.sale_price %}
+                {% if item.purchase_price %}
                     <h4>
-                        {{item.sale_price.amount|floatformat}} 
-                        {% if item.sale_price.currency %}
-                            {{item.sale_price.currency}}
+                        {{item.purchase_price.amount|floatformat}} 
+                        {% if item.purchase_price.currency %}
+                            {{item.purchase_price.currency}}
                         {% endif %}
-                        {{item.sale_price.get_transaction_method_display}}
+                        {{item.purchase_price.get_transaction_method_display}}
                     </h4>
                 {% endif %}
             {% endfor %}
-            {% for item in trade.items_bought.all %}
-                {% if item.sale_price %}
-                    <h4>
-                        {{item.sale_price.amount|floatformat}} 
-                        {% if item.sale_price.currency %}
-                            {{item.sale_price.currency}}
-                        {% endif %}
-                        {{item.sale_price.get_transaction_method_display}}
-                    </h4>
-                {% else %}
-                    <h4></h4>
-                {% endif %}
-            {% empty %}
-                <h4></h4>
-            {% endfor %}
+            {% if trade.items_bought.all.exists %}
+                {% for item in trade.items_sold.all %}
+                    {% if item.sale_price %}
+                        <h4>
+                            {{item.sale_price.amount|floatformat}} 
+                            {% if item.sale_price.currency %}
+                                {{item.sale_price.currency}}
+                            {% endif %}
+                            {{item.sale_price.get_transaction_method_display}}!
+                        </h4>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
         </div>
+        <hr>
+        <div class="transaction-profit">
+        {% for item in trade.items_sold.all %}
+            {% if item.profit %}
+                <h4>
+                    Profit: {{item.profit}}
+                </h4>
+            {% endif %}
+        {% endfor %}
+        </div>
+        
         
         {% endif %}
         <!-- <div><b>

@@ -132,18 +132,40 @@ $tf2-font: (
 
   .transaction-titles {
     display: flex;
-    justify-content: space-around;
-    text-align: center;
+    justify-content: space-between;
     
-    font-family: map-get($tf2-font, family);
-    font-size: map-get($tf2-font, size);
-    color: map-get($tf2-font, color)
+
+    h4 {
+      text-align: center;
+    
+      font-family: map-get($tf2-font, family);
+      color: map-get($tf2-font, color);
+
+      &:first-child {
+        display: flex;
+        width: 45%;
+        justify-content: center;
+      }
+      &:last-child {
+        display: flex;
+        width: 45%;
+        justify-content: center;
+      }
+    }
   }
+
+  .transaction-profit {
+    text-align: center;
+    font-family: map-get($tf2-font, family);
+    color: map-get($tf2-font, color);
+  }
+
+  
 
   .trade-items-container {
     display: flex;
     justify-content: space-between;
-    padding:10px;
+    padding:10px, 0, 10px;
     width: 100%;
     color:grey;
 

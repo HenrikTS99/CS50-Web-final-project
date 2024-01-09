@@ -62,13 +62,12 @@ ItemValueFormset = inlineformset_factory(
     formset=BaseItemValueFormSet)
 
 
-class TransactionForm(ModelForm):
+class ValueForm(forms.ModelForm):
     class Meta:
-        model = Transaction
-        fields = ["transaction_type", "transaction_method", 
-            "amount", "currency", "description"]
+        model = Value
+        fields = ['transaction_method', 'currency', 'amount']
         widgets = TRANSACTION_WIDGETS
-    
+
     def clean(self):
         cleaned_data = super().clean()
         transaction_method = cleaned_data.get("transaction_method")
@@ -83,10 +82,37 @@ class TransactionForm(ModelForm):
 
         if transaction_method in ['scm_funds', 'paypal'] and not currency:
             raise ValidationError({'currency': "Currency is required when transaction method is Steam Wallet Funds or PayPal."})
-        
+
         return cleaned_data
 
 
+class TransactionForm(ModelForm):
+    class Meta:
+        model = Transaction
+        fields = ["transaction_type", "description"]
+        widgets = TRANSACTION_WIDGETS
+    
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     transaction_method = cleaned_data.get("transaction_method")
+    #     currency = cleaned_data.get("currency")
+    #     amount = cleaned_data.get("amount")
+
+    #     if transaction_method not in 'items' and not amount:
+    #         raise ValidationError({'amount': "Amount is required."})
+
+    #     if currency and not currency.isupper():
+    #         cleaned_data["currency"] = currency.upper()
+
+    #     if transaction_method in ['scm_funds', 'paypal'] and not currency:
+    #         raise ValidationError({'currency': "Currency is required when transaction method is Steam Wallet Funds or PayPal."})
+        
+    #     return cleaned_data
+
+TransactionValueFormset = inlineformset_factory(
+    Transaction, Value, form=ValueForm,
+    widgets=TRANSACTION_WIDGETS, 
+    extra=1, can_delete=False)
 
 class TradeSaleForm(TransactionForm):
     class Meta(TransactionForm.Meta):
@@ -101,7 +127,7 @@ class TradeSaleForm(TransactionForm):
         if self.owner:
             self.fields['items_sold'].queryset = Item.objects.filter(sold=False, owner=self.owner)
             self.fields['items_bought'].queryset = Item.objects.filter(sold=False, owner=self.owner)
-            self.fields['currency'].initial = self.owner.default_scm_currency
+            #self.fields['currency'].initial = self.owner.default_scm_currency
 
 class TradeBuyForm(TransactionForm):
     class Meta(TransactionForm.Meta):
