@@ -1,5 +1,5 @@
 from django.test import TestCase, Client
-from .models import User, Item, Transaction
+from .models import User, Item, Transaction, Value
 import datetime
 # Create your tests here.
 
