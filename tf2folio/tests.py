@@ -51,11 +51,17 @@ class TransactionTestCase(TestCase):
         transaction_keys = Transaction.objects.create(
             owner=self.user,
             transaction_type='sale',
-            transaction_method='keys',
-            amount=100,
             description='Test transaction keys method',
             date = datetime.datetime.now()
         )
+
+        transaction_value = Value.objects.create(
+            transaction=self, 
+            transaction_method='keys', 
+            amount=100
+            )
+        transaction_keys.transaction_value = transaction_value
+        transaction_keys.save()
 
         # Add items to the transaction
         transaction_keys.items_sold.add(self.item1)
