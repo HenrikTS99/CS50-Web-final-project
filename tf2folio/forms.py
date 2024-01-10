@@ -10,6 +10,10 @@ TRANSACTION_WIDGETS = {
             'currency': forms.TextInput(attrs={'class': 'currency-field'}),
         }
 
+TRANSACTION_METHOD_KEYS = 'keys'
+TRANSACTION_METHOD_SCM_FUNDS = 'scm_funds'
+TRANSACTION_METHOD_PAYPAL = 'paypal'
+TRANSACTION_METHOD_ITEMS = 'items'
 
 class ItemForm(ModelForm):
     class Meta:
@@ -18,52 +22,31 @@ class ItemForm(ModelForm):
             "wear", "particle_effect", "description", "killstreak")
 
 
-class BaseItemValueFormSet(forms.BaseInlineFormSet):
-    validate_empty_forms = False
-    def __init__(self, *args, **kwargs):
-        self.owner = kwargs.pop('owner', None)
-        super(BaseItemValueFormSet, self).__init__(*args, **kwargs)
-
-    def add_fields(self, form, index):
-        super(BaseItemValueFormSet, self).add_fields(form, index)
-        if self.owner:
-            form.fields['currency'].initial = self.owner.default_scm_currency
+class BaseValueForm(forms.ModelForm):
+    class Meta:
+        model = Value
+        fields = ['transaction_method', 'currency', 'amount']
+        widgets = TRANSACTION_WIDGETS
 
     def clean(self):
-        super().clean()
+        cleaned_data = super().clean()
+        currency = cleaned_data.get("currency")
 
-        for form in self.forms:
-            if form.is_valid():
-                transaction_method = form.cleaned_data.get("transaction_method")
-                currency = form.cleaned_data.get("currency")
-
-                if transaction_method in ['scm_funds', 'paypal'] and not currency:
-                    raise ValidationError("The 'currency' field is required when transaction method is SCM Funds or PayPal.")
-            else:
-                print("form is not valid")
-
-    def save(self, commit=True):
-        instances = super().save(commit=False)
-
-        for instance in instances:
-            if instance.amount is None:
-                # should only ever be one form in the formset, therefore only one instance
-                print("amount is none")
-                return []
-            if instance.transaction_method not in ['scm_funds', 'paypal'] and instance.currency:
-                instance.currency = None
-            if commit:
-                instance.save()
-        return instances
-
-ItemValueFormset = inlineformset_factory(
-    Item, Value, fields=("transaction_method", "currency", "amount"),
-    widgets=TRANSACTION_WIDGETS, 
-    extra=1, can_delete=False,
-    formset=BaseItemValueFormSet)
+        if currency and not currency.isupper():
+            cleaned_data["currency"] = currency.upper()
+        return cleaned_data
 
 
-class ValueForm(forms.ModelForm):
+class ItemValueForm(BaseValueForm):
+    # Exclude items from transaction method choices for item value form
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['transaction_method'].choices = [
+            choice for choice in self.fields['transaction_method'].choices if choice[0] != TRANSACTION_METHOD_ITEMS
+        ]
+        
+        
+class TradeValueForm(BaseValueForm):
     class Meta:
         model = Value
         fields = ['transaction_method', 'currency', 'amount']
@@ -75,15 +58,12 @@ class ValueForm(forms.ModelForm):
         currency = cleaned_data.get("currency")
         amount = cleaned_data.get("amount")
 
-        if transaction_method not in 'items' and not amount:
-            raise ValidationError({'amount': "Amount is required."})
+        if transaction_method != TRANSACTION_METHOD_ITEMS and not amount:
+            raise ValidationError({'amount': "Amount is required. If it's a item's only transaction, please select 'TF2 Items' as the transaction method."})
 
-        if currency and not currency.isupper():
-            cleaned_data["currency"] = currency.upper()
-
-        if transaction_method in ['scm_funds', 'paypal'] and not currency:
+        if transaction_method in [TRANSACTION_METHOD_SCM_FUNDS, TRANSACTION_METHOD_PAYPAL] and not currency:
             raise ValidationError({'currency': "Currency is required when transaction method is Steam Wallet Funds or PayPal."})
-            
+
         return cleaned_data
 
 

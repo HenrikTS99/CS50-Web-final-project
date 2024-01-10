@@ -6,9 +6,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.db import IntegrityError
 from .models import User, Item, Transaction, Value
-from .forms import ItemForm, TradeSaleForm, TradeBuyForm, TransactionForm, ItemValueFormset, ValueForm
+from .forms import ItemForm, TradeSaleForm, TradeBuyForm, TransactionForm, ItemValueForm, TradeValueForm
 from . import utils
-import datetime
 from django.http import JsonResponse
 import json
 import requests
@@ -71,6 +70,7 @@ def register(request):
     else:
         return render(request, "tf2folio/register.html")
 
+# TODO: remove or update this view
 @login_required
 def new_item(request):
     if request.method == "POST":
@@ -97,8 +97,8 @@ def new_trade(request):
 
     return render(request, "tf2folio/new-trade.html", {
         "sale_form": TradeSaleForm(owner=request.user), "buy_form": TradeBuyForm(owner=request.user), 
-        "item_form": ItemForm(), "item_value_form": ItemValueFormset(owner=request.user),
-        "value_form": ValueForm(),
+        "item_form": ItemForm(), "item_value_form": ItemValueForm(),
+        "value_form": TradeValueForm(),
         "user": request.user
     })
 
@@ -107,22 +107,30 @@ def new_trade(request):
 @login_required
 def register_item(request):
     form = ItemForm(request.POST)
-    formset = ItemValueFormset(request.POST, instance=form.instance)
+    itemValueForm = ItemValueForm(request.POST)
 
-    if form.is_valid():
-        item = utils.save_item(form, request.user)
-        if formset.is_valid():
-            utils.add_estimated_price_to_item(formset, item)
-        else:
-            print(formset.errors)
-        item_html = render_to_string('tf2folio/item-template.html', {'item': item })
-        response_data = {
-            "message": "Data sent successfully.",
-            "item_id": item.id,
-            "item_html": item_html
-        }
-        return JsonResponse(response_data, status=201)
-    return JsonResponse({"message": "Invalid form data."}, status=400)
+    errorResponse = utils.validate_forms(form, itemValueForm)
+    if errorResponse:
+        return errorResponse
+
+    item_title, item_image, item_particle_id = utils.create_item_data(form)
+    item = Item.create_item(form, request.user, item_title, item_image, item_particle_id)
+
+    # Only save estimated value object if user filled in amount field
+    form_amount = itemValueForm.cleaned_data.get('amount')
+    if form_amount is not None:
+        estimated_value = Value.create_estimated_item_value(itemValueForm, item)
+        item.estimated_price = estimated_value
+        item.save()
+
+    item_html = render_to_string('tf2folio/item-template.html', {'item': item })
+    response_data = {
+        "message": "Data sent successfully.",
+        "item_id": item.id,
+        "item_html": item_html
+    }
+    return JsonResponse(response_data, status=201)
+
 
 @require_POST
 def get_item_html(request, item_id):
@@ -149,16 +157,18 @@ def register_trade(request):
         return error_response
     
     form = TransactionForm(request.POST)
-    valueForm = ValueForm(request.POST)
+    valueForm = TradeValueForm(request.POST)
     errorResponse = utils.validate_forms(form, valueForm)
     if errorResponse:
         return errorResponse
 
     trade = Transaction.create_trade(form, request.user, item_list, item_recieved_list)
 
-    value = Value.create_trade_value(valueForm, trade)
-    trade.transaction_value = value
-    trade.save()
+    form_amount = valueForm.cleaned_data.get('amount')
+    if form_amount is not None:
+        value = Value.create_trade_value(valueForm, trade)
+        trade.transaction_value = value
+        trade.save()
     trade.add_items(item_list, item_recieved_list) # Add the items to the many-to-many fields
    
     # If one item is sold only for pure, update the item's sale_price/value

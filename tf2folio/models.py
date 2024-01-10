@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 import pycountry
 from django.utils import timezone
+import datetime
 
 TRANSACTION_CHOICES = [
     ('buy', 'Buy'),
@@ -72,6 +73,19 @@ class Item(models.Model):
     purchase_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="purchase_price_value", default=None, null=True, blank=True)
     sale_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="sold_item_value", default=None, null=True, blank=True)
 
+    @classmethod
+    def create_item(cls, form, user, title, image, particle_id):
+        item = form.save(commit=False)
+        item.owner = user
+        item.date = datetime.date.today()
+        item.item_title = title
+        item.image_url = image
+        item.particle_id = particle_id
+        item.save()
+        return item
+
+        
+
     def add_sale_price(self, value_object):
         self.sale_price = value_object
         self.save()
@@ -104,6 +118,13 @@ class Value(models.Model):
     def create_trade_value(cls, form, trade):
         value = form.save(commit=False)
         value.transaction = trade
+        value.save()
+        return value
+
+    @classmethod
+    def create_estimated_item_value(cls, form, item):
+        value = form.save(commit=False)
+        value.item = item
         value.save()
         return value
 

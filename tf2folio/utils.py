@@ -495,6 +495,15 @@ USD_KEY_PRICES = {
 
 conversion_rates_cache = {}
 
+
+def create_item_data(form):
+    item = form.save(commit=False)
+    title = create_title(item)
+    image_url = create_image(item)
+    particle_id = get_particle_id(item.particle_effect)
+    return title, image_url, particle_id
+
+
 def create_title(Item):
     title_parts = []
     if not Item.craftable:
@@ -554,15 +563,16 @@ def create_image(Item):
 
 
 def get_particle_id(particle_effect):
-    for i in range(2):
+    if particle_effect:
         print(particle_effect)
         particle_id = REVERSE_PARTICLE_MAPPING.get(particle_effect)
         if particle_id:
             print("particle img sucsess")
             return particle_id
-        else:
+        elif particle_effect != particle_effect.title():
             print("Particle ID lookup failed, trying again with capitalized title.")
-            particle_effect = particle_effect.title()
+            get_particle_id(particle_effect.title())
+
     return None
 
 
@@ -577,16 +587,6 @@ def save_item(form, user):
     item.save()
     return item
 
-
-def add_estimated_price_to_item(formset, item):
-    instances = formset.save(commit=False)
-    for instance in instances:
-        instance.item = item
-        instance.save()
-        item.estimated_price = instance
-        item.save()
-        print('value formset saved')
- 
 
 # New trade functions
 def create_item_lists(item_ids):
