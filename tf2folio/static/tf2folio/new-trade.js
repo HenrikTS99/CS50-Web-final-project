@@ -131,7 +131,14 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errors => {
+                    throw errors;
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             console.log("Data sent sucsessfully", data);
             // Append the new item to the page
@@ -142,9 +149,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 itemRegisterForm.classList.remove('recieved-item-form');
             }
             itemsContainer.insertAdjacentHTML('beforeend', data.item_html);
+            clearErrors();
+            
         })
-        .catch(error => {
-            console.error('Error:', error);
+        .catch(errors => {
+            console.error('Server errors:', errors);
+            displayErrors(errors);
         })
     }
 
@@ -215,6 +225,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
+    }
+
+    function clearErrors() {
+        const errorElement = document.getElementById('trade-register-error');
+        errorElement.style.display = 'none';
+        errorElement.innerHTML = '';
     }
 
 

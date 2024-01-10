@@ -31,9 +31,14 @@ class BaseValueForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         currency = cleaned_data.get("currency")
+        transaction_method = cleaned_data.get("transaction_method")
 
         if currency and not currency.isupper():
             cleaned_data["currency"] = currency.upper()
+
+        if transaction_method in [TRANSACTION_METHOD_SCM_FUNDS, TRANSACTION_METHOD_PAYPAL] and not currency:
+            raise ValidationError({'currency': "Currency is required when transaction method is Steam Wallet Funds or PayPal."})
+
         return cleaned_data
 
 
@@ -60,9 +65,6 @@ class TradeValueForm(BaseValueForm):
 
         if transaction_method != TRANSACTION_METHOD_ITEMS and not amount:
             raise ValidationError({'amount': "Amount is required. If it's a item's only transaction, please select 'TF2 Items' as the transaction method."})
-
-        if transaction_method in [TRANSACTION_METHOD_SCM_FUNDS, TRANSACTION_METHOD_PAYPAL] and not currency:
-            raise ValidationError({'currency': "Currency is required when transaction method is Steam Wallet Funds or PayPal."})
 
         return cleaned_data
 
