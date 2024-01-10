@@ -680,9 +680,6 @@ def process_parent_item(parent_item, origin_trade):
 
     # check if cash/keys in trade, if so, create Value object
     if origin_trade.transaction_value:
-        # Value should not be saved, just used to calculate total sale price
-        #value = Value(item=parent_item, transaction_method=origin_trade.transaction_method, 
-                #currency=origin_trade.currency, amount=origin_trade.amount)
         item_sale_price_objects.append(origin_trade.transaction_value)
 
     parent_item.sale_price = get_total_sale_value_object(item_sale_price_objects, parent_item)
