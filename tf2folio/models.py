@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import pycountry
+from django.utils import timezone
 
 TRANSACTION_CHOICES = [
     ('buy', 'Buy'),
@@ -71,7 +72,6 @@ class Item(models.Model):
     purchase_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="purchase_price_value", default=None, null=True, blank=True)
     sale_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="sold_item_value", default=None, null=True, blank=True)
 
-        
     def add_sale_price(self, value_object):
         self.sale_price = value_object
         self.save()
@@ -101,8 +101,11 @@ class Value(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     @classmethod
-    def create_for_item(cls, item, transaction_method, currency, amount):
-        return cls.objects.create(item=item, transaction_method=transaction_method, currency=currency, amount=amount)
+    def create_trade_value(cls, form, trade):
+        value = form.save(commit=False)
+        value.transaction = trade
+        value.save()
+        return value
 
     def clean(self):
         super().clean()
@@ -117,18 +120,22 @@ class Value(models.Model):
 
 
 class Transaction(models.Model):
-    TRANSACTION_METHOD_CHOICES = SELL_METHOD_CHOICES + [('items', 'TF2 Items')]
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name= "user_transactions", default=None)
     transaction_value = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="transaction_value", default=None, null=True, blank=True)
     transaction_type = models.CharField(max_length=4, choices=TRANSACTION_CHOICES)
-    # transaction_method = models.CharField(max_length=30, choices=TRANSACTION_METHOD_CHOICES, default=('keys', 'Keys'))
-    # currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, null=True, blank=True)
-    # amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     items_sold = models.ManyToManyField('Item', blank=True, related_name="sales_transactions")
     items_bought = models.ManyToManyField('Item', blank=True, related_name="buys_transactions")
     description = models.TextField(max_length=400, null=True, blank=True)
     date = models.DateTimeField(null=True, blank=True)
+
+    @classmethod
+    def create_trade(cls, form, user, item_list, item_recieved_list):
+        trade = form.save(commit=False)
+        trade.owner = user
+        trade.date = timezone.now()
+        trade.save() # Save the object to generate an id so items can be added to the many-to-many fields
+        return trade
 
     @property
     def transaction_method(self):
@@ -149,11 +156,10 @@ class Transaction(models.Model):
             item.save()
         elif self.transaction_type == "buy":
             self.items_bought.add(item)
-            value = Value.create_for_item(item=item, transaction_method=self.transaction_method, 
+            value = Value.objects.create(item=item, transaction_method=self.transaction_method, 
                     currency=self.currency, amount=self.amount)
             item.add_purchase_price(value)
             
-
     def add_items(self, item_list, item_recieved_list):
         for item in item_list:
             self.add_item(item)

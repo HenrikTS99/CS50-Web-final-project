@@ -9,7 +9,6 @@ from .models import User, Item, Transaction, Value
 from .forms import ItemForm, TradeSaleForm, TradeBuyForm, TransactionForm, ItemValueFormset, ValueForm
 from . import utils
 import datetime
-from django.utils import timezone
 from django.http import JsonResponse
 import json
 import requests
@@ -140,53 +139,34 @@ def get_item_html(request, item_id):
     return JsonResponse(response_data, status=201)
 
 
+@require_POST
 def register_trade(request):
     print(request.POST)
-    if request.method != "POST":
-        return JsonResponse({"error": "POST request required."}, status=400)
-
+    print(request.POST.get('transaction_method'))
     # Get the items selected in the form
-    item_list, item_recieved_list, response, = utils.process_items(request)
-    # Error handling
-    if response:
-        return response
+    item_list, item_recieved_list, error_response, = utils.process_items(request)
+    if error_response:
+        return error_response
     
     form = TransactionForm(request.POST)
     valueForm = ValueForm(request.POST)
-    if form.is_valid():
-        trade = form.save(commit=False)
-        trade.owner = request.user
-        trade.date = timezone.now()
-        
-        trade.save() # Save the object to generate an id so items can be added to the many-to-many fields
-        if valueForm.is_valid():
-            value = valueForm.save(commit=False)
-            value.transaction = trade
-            value.save()
-            trade.transaction_value = value
-            trade.save()
-            #utils.add_estimated_price_to_item(valueForm, trade)
-        #trade.transaction_value = Value.objects.create(transaction=trade, transaction_method=trade.transaction_method, 
-         #       currency=trade.currency, amount=trade.amount)
-        #trade.save()
-        trade.add_items(item_list, item_recieved_list) # Add the items to the many-to-many fields
+    errorResponse = utils.validate_forms(form, valueForm)
+    if errorResponse:
+        return errorResponse
 
-        # If one item is sold only for pure, update the item's sale_price/value
-        print(item_recieved_list)
-        if len(item_list) == 1 and not item_recieved_list and request.POST.get('transaction_type') == 'sale':
-            print("logging pure sale")
-            utils.process_pure_sale(item_list[0], trade)
-        
-        response_data = utils.create_trade_response_data(trade)
-        return JsonResponse(response_data, status=201)
-    # Form is not valid
-    print(form.errors)
-    return JsonResponse({"errors": form.errors}, status=400)
+    trade = Transaction.create_trade(form, request.user, item_list, item_recieved_list)
 
-
-                        
-
-        
-
+    value = Value.create_trade_value(valueForm, trade)
+    trade.transaction_value = value
+    trade.save()
+    trade.add_items(item_list, item_recieved_list) # Add the items to the many-to-many fields
+   
+    # If one item is sold only for pure, update the item's sale_price/value
+    # TODO: handle if more than 1 item is sold for pure
+    if len(item_list) == 1 and not item_recieved_list and request.POST.get('transaction_type') == 'sale':
+        print("logging pure sale")
+        utils.process_pure_sale(item_list[0], trade)
     
-
+    response_data = utils.create_trade_response_data(trade)
+    return JsonResponse(response_data, status=201)
+    

@@ -586,16 +586,7 @@ def add_estimated_price_to_item(formset, item):
         item.estimated_price = instance
         item.save()
         print('value formset saved')
-
-def add_value_to_trade(valueForm, trade):
-    instances = formset.save(commit=False)
-    for instance in instances:
-        instance.transaction = trade
-        instance.save()
-        trade.transaction_value = instance
-        trade.save()
-        print('value formset saved')
-        
+ 
 
 # New trade functions
 def create_item_lists(item_ids):
@@ -625,7 +616,18 @@ def process_items(request):
     return item_list, item_recieved_list, None
 
 
+def validate_forms(form, valueForm):
+    if not form.is_valid():
+        print(form.errors)
+        return JsonResponse({"errors": form.errors}, status=400)
+    if not valueForm.is_valid():
+        print(valueForm.errors)
+        return JsonResponse({"errors": valueForm.errors}, status=400)
+    return None
+
+
 def create_trade_response_data(trade):
+    # TODO: transaction_html might not be used, consider removing from here, templates and new-trade.js in future
     transaction_html = render_to_string('tf2folio/transaction-template.html', {'transaction': trade })
     return {
         "message": "Data sent successfully.",
@@ -639,7 +641,7 @@ def create_trade_response_data(trade):
 def process_pure_sale(item, trade):
     print(item)
     tradeValue = trade.transaction_value
-    value = Value.create_for_item(item=item, transaction_method=tradeValue.transaction_method, 
+    value = Value.objects.create(item=item, transaction_method=tradeValue.transaction_method, 
                     currency=tradeValue.currency, amount=tradeValue.amount)
     item.add_sale_price(value)
     print(f'{item.item_title} sale price: {item.sale_price}')

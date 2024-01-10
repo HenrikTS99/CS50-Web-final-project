@@ -167,30 +167,7 @@
         
         
         {% endif %}
-        <!-- <div><b>
-            {{trade.amount|floatformat}} 
-            {% if trade.currency %}
-                {{trade.currency}}
-            {% endif %}
-            {{trade.get_transaction_method_display}}
-        </b></div>
-        
-
-        {% if trade.items_sold.all.count == 1 %}
-            {% for item in trade.items_sold.all %}
-                {% if item.sale_price %}
-                    <h3>Total sell price!:</h3>
-                    <div><b>
-                        {{item.sale_price.amount|floatformat}} 
-                        {% if item.sale_price.currency %}
-                            {{item.sale_price.currency}}
-                        {% endif %}
-                        {{item.sale_price.get_transaction_method_display}}
-                    </b></div>
-                {% endif %}
-            {% endfor %}
-        {% endif %}
-
+        <!--  
         {{trade.description}}
         {{trade.date}} -->
     </div> 

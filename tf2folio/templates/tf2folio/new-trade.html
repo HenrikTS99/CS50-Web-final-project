@@ -35,21 +35,10 @@
                             <option value="{{ currency.0 }}">{{ currency.1 }}</option>
                         {% endfor %}
                     </datalist>
-                <!-- <label for="{{ sale_form.transaction_method.id_for_label }}">Transaction Method:</label>
-                {{sale_form.transaction_method}}
-                <label for="{{ sale_form.amount.id_for_label }} " class="amount-label" >Amount:</label>
-                {{sale_form.amount}} -->
                 
+                <!-- User's default currencies -->
                 <input type="hidden" id="default-scm-currency" value="{{ user.default_scm_currency }}">
                 <input type="hidden" id="default-paypal-currency" value="{{ user.default_paypal_currency }}">
-
-                <!-- <label for="{{ sale_form.currency.id_for_label }}" class="currency-label">Currency:</label>
-                <input type="text" name="currency" class="currency-field" list="currencies" />
-                    <datalist id="currencies">
-                        {% for currency in sale_form.fields.currency.choices %}
-                            <option value="{{ currency.0 }}">{{ currency.1 }}</option>
-                        {% endfor %}
-                    </datalist> -->
 
                 <label for="{{ sale_form.items_bought.id_for_label }}">Items Recieved:</label>
                 <div id="recieved-items" class="item-boxes-container"></div>
@@ -71,6 +60,8 @@
 
                 <button type="button" class="btn btn-sm btn-outline-primary add-item">Add Item</button>
 
+                <h5>Bought For:</h5>
+
                 <label for="{{ value_form.transaction_method.id_for_label }}">Transaction Method:</label>
                 {{value_form.transaction_method}}
                 <label for="{{ value_form.amount.id_for_label }}" class="amount-label" >Amount:</label>
@@ -83,20 +74,6 @@
                             <option value="{{ currency.0 }}">{{ currency.1 }}</option>
                         {% endfor %}
                     </datalist>
-
-                <!-- <label for="{{ buy_form.transaction_method.id_for_label }}">Transaction Method:</label>
-                {{buy_form.transaction_method}}
-
-                <label for="{{ buy_form.amount.id_for_label }}" class="amount-label">Amount:</label>
-                {{buy_form.amount}}
-
-                <label for="{{ buy_form.currency.id_for_label }}" class="currency-label">Currency:</label>
-                <input type="text" name="currency" class="currency-field" list="currencies" />
-                    <datalist id="currencies">
-                        {% for currency in buy_form.fields.currency.choices %}
-                            <option value="{{ currency.0 }}">{{ currency.1 }}</option>
-                        {% endfor %}
-                    </datalist> -->
 
                 <label for="{{ buy_form.description.id_for_label }}">Description:</label>
                 {{buy_form.description}}
