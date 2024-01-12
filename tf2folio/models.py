@@ -4,6 +4,7 @@ import pycountry
 from django.utils import timezone
 import datetime
 
+
 TRANSACTION_CHOICES = [
     ('buy', 'Buy'),
     ('sale', 'Sale')
@@ -84,8 +85,6 @@ class Item(models.Model):
         item.save()
         return item
 
-        
-
     def add_sale_price(self, value_object):
         self.sale_price = value_object
         self.save()
@@ -94,12 +93,17 @@ class Item(models.Model):
         self.purchase_price = value_object
         self.save()
 
+    #TODO: Once profit can be calculated, call it once and save it to the database as a Value object
+    # At the moment profit is called every time to get the profit for displaying, which is not ideal
     def profit(self):
         if self.purchase_price and self.sale_price:
-            profit = self.sale_price.amount - self.purchase_price.amount
-            profit = str(profit).rstrip('0').rstrip('.') if '.' in str(profit) else profit
-            currency = self.purchase_price.currency if self.purchase_price.currency else ""
-            return f'{profit} {currency} {self.purchase_price.get_transaction_method_display()}'
+            from .utils import get_purchase_and_sale_price #Import here to avoid circular import
+            purchase_price, sale_price = get_purchase_and_sale_price(self.purchase_price, self.sale_price)
+
+            profit = sale_price.amount - purchase_price.amount
+            profit = str(profit).rstrip('0').rstrip('.') if '.' in str(profit) else profit # Remove trailing zeroes
+            currency = purchase_price.currency if purchase_price.currency else ""
+            return f'{profit} {currency} {purchase_price.get_transaction_method_display()}'
         return None
 
     def __str__(self):
@@ -127,6 +131,9 @@ class Value(models.Model):
         value.item = item
         value.save()
         return value
+
+    def copy(self):
+        return Value(item=self.item, transaction_method=self.transaction_method, currency=self.currency, amount=self.amount)
 
     def clean(self):
         super().clean()

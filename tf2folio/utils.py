@@ -738,3 +738,48 @@ def get_key_price(amount_usd, transaction_method):
     key_price =  key_price.quantize(Decimal('.00'), rounding=ROUND_DOWN)
     print(f'key_price: {key_price} from {amount_usd} USD')
     return key_price
+
+
+def get_purchase_and_sale_price(purchase_value, sale_value):
+    if purchase_value.transaction_method != sale_value.transaction_method:
+        purchase_price = convert_value_method_to_keys(purchase_value)
+        sale_price = convert_value_method_to_keys(sale_value)
+            
+    elif purchase_value.currency != sale_value.currency:
+        purchase_price, sale_price = convert_to_same_currency(purchase_value, sale_value)
+
+    else:
+        purchase_price = purchase_value
+        sale_price = sale_value
+    return purchase_price, sale_price
+
+
+def convert_to_same_currency(value1, value2):
+    value2 = value2.copy() # copy to avoid changing original value object
+    conversion_currency = value1.currency
+    converted_amount = round(convert_currency(value2.amount, value2.currency, conversion_currency), 2)
+
+    if converted_amount is None:
+        print ('Error converting currency, skipping this value object')
+        return None
+    value2.amount = converted_amount
+    value2.currency = conversion_currency
+    return value1, value2
+
+
+def convert_value_method_to_keys(value):
+    value = value.copy() # copy to avoid changing original value object
+    if value.transaction_method == 'keys':
+        return value
+    if value.transaction_method in ['paypal', 'scm_funds']:
+        if value.currency != 'USD':
+            converted_amount = convert_currency(value.amount, value.currency)
+            if converted_amount is None:
+                print ('Error converting currency, skipping this value object')
+                return None
+            value.amount = converted_amount
+        key_price = get_key_price(value.amount, value.transaction_method)
+        value.amount = key_price
+        value.transaction_method = 'keys'
+        value.currency = None
+    return value
