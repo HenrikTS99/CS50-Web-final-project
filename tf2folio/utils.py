@@ -576,18 +576,6 @@ def get_particle_id(particle_effect):
     return None
 
 
-def save_item(form, user):
-    item = form.save(commit=False)
-    item.owner = user
-    item.date = datetime.date.today()
-    item.item_title = create_title(item)
-    item.image_url = create_image(item)
-    if item.particle_effect:
-        item.particle_id = get_particle_id(item.particle_effect)
-    item.save()
-    return item
-
-
 # New trade functions
 def create_item_lists(item_ids):
     item_list = []
@@ -682,9 +670,8 @@ def process_parent_item(parent_item, origin_trade):
     if origin_trade.transaction_value:
         item_sale_price_objects.append(origin_trade.transaction_value)
 
-    parent_item.sale_price = get_total_sale_value_object(item_sale_price_objects, parent_item)
-    parent_item.save()
-    print(f'{parent_item.item_title} sale price: {parent_item.sale_price}')
+    sale_value = get_total_sale_value_object(item_sale_price_objects, parent_item)
+    parent_item.add_sale_price(sale_value)
     # check if parent item has a parent item recursively
     get_parent_item_and_origin_trade(parent_item)
     
@@ -715,7 +702,7 @@ def get_total_sale_value_object(value_objects, item):
 
 def convert_currency(amount, from_currency, to_currency='USD'):
     if from_currency in conversion_rates_cache and to_currency in conversion_rates_cache[from_currency] and time.time() - conversion_rates_cache[from_currency][to_currency]['time'] < 3600:
-        print(f'Using cached conversion rate for {from_currency} to {to_currency}')
+        #print(f'Using cached conversion rate for {from_currency} to {to_currency}')
         return Decimal(amount/Decimal(conversion_rates_cache[from_currency][to_currency]['rate']))
     try:
         url = f'https://api.exchangerate-api.com/v4/latest/{to_currency}'
@@ -724,7 +711,7 @@ def convert_currency(amount, from_currency, to_currency='USD'):
         if from_currency not in conversion_rates_cache:
             conversion_rates_cache[from_currency] = {}
         conversion_rates_cache[from_currency][to_currency] = {'rate': data['rates'][from_currency], 'time': time.time()}
-        print(conversion_rates_cache)
+        #print(conversion_rates_cache)
         return Decimal(amount/Decimal(data['rates'][from_currency]))
     except requests.exceptions.RequestException as error:
         print('Error:', error)
@@ -736,11 +723,23 @@ def convert_currency(amount, from_currency, to_currency='USD'):
 def get_key_price(amount_usd, transaction_method):
     key_price = Decimal(amount_usd)/Decimal(USD_KEY_PRICES[transaction_method])
     key_price =  key_price.quantize(Decimal('.00'), rounding=ROUND_DOWN)
-    print(f'key_price: {key_price} from {amount_usd} USD')
+    #print(f'key_price: {key_price} from {amount_usd} USD')
     return key_price
 
 
-def get_purchase_and_sale_price(purchase_value, sale_value):
+def get_item_profit_value(item):
+    if item.purchase_price and item.sale_price:
+        purchase_price, sale_price = normalize_transaction_values(item.purchase_price, item.sale_price)
+
+        profit = sale_price.amount - purchase_price.amount
+        currency = purchase_price.currency if purchase_price.currency else None
+        profit_value = Value.objects.create(item=item, transaction_method=purchase_price.transaction_method,
+                currency=currency, amount=profit)
+        return profit_value
+    return None
+
+# If values are in different currencies or transaction methods, convert to be in same currency and transaction method
+def normalize_transaction_values(purchase_value, sale_value):
     if purchase_value.transaction_method != sale_value.transaction_method:
         purchase_price = convert_value_method_to_keys(purchase_value)
         sale_price = convert_value_method_to_keys(sale_value)

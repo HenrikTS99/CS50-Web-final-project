@@ -73,6 +73,7 @@ class Item(models.Model):
     estimated_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="estimated_item_value", default=None, null=True, blank=True)
     purchase_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="purchase_price_value", default=None, null=True, blank=True)
     sale_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="sold_item_value", default=None, null=True, blank=True)
+    profit_value = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="profit_value", default=None, null=True, blank=True)
 
     @classmethod
     def create_item(cls, form, user, title, image, particle_id):
@@ -88,23 +89,26 @@ class Item(models.Model):
     def add_sale_price(self, value_object):
         self.sale_price = value_object
         self.save()
+        self.get_and_add_profit_value()
+
+    def get_and_add_profit_value(self):
+        if self.purchase_price:
+            from .utils import get_item_profit_value #Import here to avoid circular import
+            profit_value = get_item_profit_value(self)
+            if profit_value:
+                self.profit_value = profit_value
+                self.save()
+
 
     def add_purchase_price(self, value_object):
         self.purchase_price = value_object
         self.save()
 
-    #TODO: Once profit can be calculated, call it once and save it to the database as a Value object
-    # At the moment profit is called every time to get the profit for displaying, which is not ideal
-    def profit(self):
-        if self.purchase_price and self.sale_price:
-            from .utils import get_purchase_and_sale_price #Import here to avoid circular import
-            purchase_price, sale_price = get_purchase_and_sale_price(self.purchase_price, self.sale_price)
 
-            profit = sale_price.amount - purchase_price.amount
-            profit = str(profit).rstrip('0').rstrip('.') if '.' in str(profit) else profit # Remove trailing zeroes
-            currency = purchase_price.currency if purchase_price.currency else ""
-            return f'{profit} {currency} {purchase_price.get_transaction_method_display()}'
-        return None
+    def profit_display(self):
+        currency = self.profit_value.currency if self.profit_value.currency else ""
+        return f'{self.profit_value.amount.normalize()} {currency} {self.profit_value.get_transaction_method_display()}'
+
 
     def __str__(self):
         return f"{self.item_title}"
@@ -131,6 +135,13 @@ class Value(models.Model):
         value.item = item
         value.save()
         return value
+
+    # Remove trailing zeroes from amount
+    def save(self, *args, **kwargs):
+        if self.amount is not None:
+            self.amount = self.amount.normalize()
+        super().save(*args, **kwargs)
+
 
     def copy(self):
         return Value(item=self.item, transaction_method=self.transaction_method, currency=self.currency, amount=self.amount)

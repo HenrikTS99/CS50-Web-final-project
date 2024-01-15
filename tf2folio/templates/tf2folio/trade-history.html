@@ -157,9 +157,9 @@
         <hr>
         <div class="transaction-profit">
         {% for item in trade.items_sold.all %}
-            {% if item.profit %}
+            {% if item.profit_value %}
                 <h4>
-                    Profit: {{item.profit}}
+                    Profit: {{item.profit_display}}
                 </h4>
             {% endif %}
         {% endfor %}
