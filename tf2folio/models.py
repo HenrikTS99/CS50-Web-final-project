@@ -103,10 +103,6 @@ class Item(models.Model):
         self.purchase_price = value_object
         self.save()
 
-    def value_display(self, value):
-        currency = value.currency if value.currency else ""
-        return f'{value.amount.normalize()} {currency} {value.get_transaction_method_display()}'
-
     def __str__(self):
         return f"{self.item_title}"
 

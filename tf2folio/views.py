@@ -20,6 +20,7 @@ def index(request):
         "items": items
     })
 
+
 @login_required
 def trade_history(request):
     all_trades = Transaction.objects.filter(owner=request.user).order_by('-date')
@@ -27,12 +28,6 @@ def trade_history(request):
         "all_trades": all_trades
     })
 
-@login_required
-def source_trades(request):
-    source_trades = Transaction.objects.filter(owner=request.user, source_trade=True).order_by('-date')
-    return render(request, "tf2folio/trade-history.html", {
-        "source_trades": source_trades
-    })
 
 def login_view(request):
     if request.method == 'POST':

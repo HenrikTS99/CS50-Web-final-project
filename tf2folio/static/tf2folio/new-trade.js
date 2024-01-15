@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
     transaction_type = 'sale';
     itemRegisterSection.style.display = 'none';
 
-    
     itemsSoldDropdown.addEventListener('dblclick', (event) => {
         addItemToSelectedItems(event, 'sold')
     });

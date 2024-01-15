@@ -1,10 +1,10 @@
 {% extends "tf2folio/layout.html" %}
 {% load static %}
+{% load trade_history_filters %}
 
 <title>{% block title %}Trade History{% endblock %}</title>
 {% block body %}
 
-{% load trade_history_filters %}
 
 <input type="checkbox" id="show-source-trades-checkbox" onclick="toggleSourceTradeDisplay()"> Show only source trades
 
@@ -71,10 +71,10 @@
                 </div>
             {% endfor %}
 
-            {% with info=trade.transaction_method|get_transaction_info %}
-                <div class="item-box border-{{ info.quality }}">
+            {% with transaction=trade.transaction_method|get_transaction_info %}
+                <div class="item-box border-{{ transaction.quality }}">
                     <div class='item-box-image'>
-                        <img class="item-image" src="{{ info.image }}">
+                        <img class="item-image" src="{{ transaction.image }}">
                     </div>
                     <span class="pure-amount">
                         {{ trade.amount|floatformat }} 
@@ -82,7 +82,7 @@
                             {{ trade.currency }}
                         {% endif %}
                     </span>
-                    <span class="{{ info.quality }}">{{ info.label }}</span>
+                    <span class="{{ transaction.quality }}">{{ transaction.label }}</span>
                 </div>
             {% endwith %}
             </div>
@@ -90,10 +90,10 @@
         {% else %}
             <div class="items-recieved">
 
-            {% with info=trade.transaction_method|get_transaction_info %}
-                <div class="item-box border-{{ info.quality }}">
+            {% with transaction=trade.transaction_method|get_transaction_info %}
+                <div class="item-box border-{{ transaction.quality }}">
                     <div class='item-box-image'>
-                        <img class="item-image" src="{{ info.image }}">
+                        <img class="item-image" src="{{ transaction.image }}">
                     </div>
                     <span class="pure-amount">
                         {{ trade.amount|floatformat }} 
@@ -101,7 +101,7 @@
                             {{ trade.currency }}
                         {% endif %}
                     </span>
-                    <span class="{{ info.quality }}">{{ info.label }}</span>
+                    <span class="{{ transaction.quality }}">{{ transaction.label }}</span>
                 </div>
             {% endwith %}
 

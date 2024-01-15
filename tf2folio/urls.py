@@ -13,5 +13,4 @@ urlpatterns = [
     path("get_item_html/<int:item_id>", views.get_item_html, name="get_item_html"),
     path("register_trade", views.register_trade, name="register_trade"),
     path("trade_history", views.trade_history, name="trade_history"),
-    path("source_trades", views.source_trades, name="source_trades"),
 ]
