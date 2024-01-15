@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('#buy-form').style.display = 'none';
     transaction_type = 'sale';
     itemRegisterSection.style.display = 'none';
+
     
     itemsSoldDropdown.addEventListener('dblclick', (event) => {
         addItemToSelectedItems(event, 'sold')

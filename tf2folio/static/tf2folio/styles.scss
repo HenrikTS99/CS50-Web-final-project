@@ -174,8 +174,8 @@ $tf2-font: (
       top: 50%;
       font-size: 100px; // adjust size as needed
     }
-
-    .items-left, .items-right {
+    // TODO: left and right titles isnt accurate, it depends if its a sale or purchase
+    .items-sold, .items-recieved {
       display: flex;
       width: 45%;
       justify-content: center;

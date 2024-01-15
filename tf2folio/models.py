@@ -103,9 +103,9 @@ class Item(models.Model):
         self.purchase_price = value_object
         self.save()
 
-    def profit_display(self):
-        currency = self.profit_value.currency if self.profit_value.currency else ""
-        return f'{self.profit_value.amount.normalize()} {currency} {self.profit_value.get_transaction_method_display()}'
+    def value_display(self, value):
+        currency = value.currency if value.currency else ""
+        return f'{value.amount.normalize()} {currency} {value.get_transaction_method_display()}'
 
     def __str__(self):
         return f"{self.item_title}"
@@ -157,6 +157,7 @@ class Transaction(models.Model):
     items_bought = models.ManyToManyField('Item', blank=True, related_name="buys_transactions")
     description = models.TextField(max_length=400, null=True, blank=True)
     date = models.DateTimeField(null=True, blank=True)
+    source_trade = models.BooleanField(default=False) # Means trade is a sale from a item previously bought for pure/cash. Can calculate profit made.
 
     @classmethod
     def create_trade(cls, form, user, item_list, item_recieved_list):
@@ -165,6 +166,12 @@ class Transaction(models.Model):
         trade.date = timezone.now()
         trade.save() # Save the object to generate an id so items can be added to the many-to-many fields
         return trade
+    
+    def check_if_source_trade(self):
+        if self.transaction_type == "sale" and self.items_sold.all().count() == 1:
+            if self.items_sold.first().purchase_price != None:
+                self.source_trade = True
+                self.save()
 
     @property
     def transaction_method(self):
@@ -196,6 +203,7 @@ class Transaction(models.Model):
             for item in item_recieved_list:
                 self.items_bought.add(item)
         self.save()
+        self.check_if_source_trade()
     
     def total_pure_recieved(self):
         pass

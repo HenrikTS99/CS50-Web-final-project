@@ -1,10 +1,16 @@
 {% extends "tf2folio/layout.html" %}
+{% load static %}
+
 <title>{% block title %}Trade History{% endblock %}</title>
 {% block body %}
 
+{% load trade_history_filters %}
+
+<input type="checkbox" id="show-source-trades-checkbox" onclick="toggleSourceTradeDisplay()"> Show only source trades
+
 <div class="trade-display-container">
 {% for trade in all_trades %}
-    <div class="trade">
+    <div class="trade" data-source-trade="{{trade.source_trade}}">
         <div class ="transaction-titles">
             {% if trade.transaction_type == 'sale' %}
                 <h4>Sold:</h4>
@@ -16,7 +22,7 @@
         </div>
         <div class="trade-items-container">
         {% if trade.transaction_type == 'sale' %}
-            <div class="items-left">
+            <div class="items-sold">
             {% for item in trade.items_sold.all %}
                 <div class="item-box border-{{item.quality}}
                 {% if item.sale_price %}
@@ -34,7 +40,7 @@
             {% endfor %}
             </div>
         {% else %}
-            <div class="items-left">
+            <div class="items-sold">
             {% for item in trade.items_bought.all %}
                 <div class="item-box border-{{item.quality}}" data-item-id="{{item.id}}">
                     <div class='item-box-image'>
@@ -52,7 +58,7 @@
 
 
         {% if trade.transaction_type == 'sale' %}
-            <div class="items-right">
+            <div class="items-recieved">
             {% for item in trade.items_bought.all %}
                 <div class="item-box border-{{item.quality}}" data-item-id="{{item.id}}">
                     <div class='item-box-image'>
@@ -64,109 +70,82 @@
                     <span class="{{item.quality}}">{{item.item_title}}</span>
                 </div>
             {% endfor %}
-            {% if trade.transaction_method == 'keys' %}
-                <div class="item-box border-unique">
+
+            {% with info=trade.transaction_method|get_transaction_info %}
+                <div class="item-box border-{{ info.quality }}">
                     <div class='item-box-image'>
-                        <img class="item-image" src="https://steamcdn-a.akamaihd.net/apps/440/icons/key.be0a5e2cda3a039132c35b67319829d785e50352.png">
+                        <img class="item-image" src="{{ info.image }}">
                     </div>
-                    <span class="pure-amount">{{trade.amount|floatformat}}</span>
-                    <span class="unique">Keys</span>
+                    <span class="pure-amount">
+                        {{ trade.amount|floatformat }} 
+                        {% if trade.transaction_method != 'keys' %}
+                            {{ trade.currency }}
+                        {% endif %}
+                    </span>
+                    <span class="{{ info.quality }}">{{ info.label }}</span>
                 </div>
-            
-            {% elif trade.transaction_method == 'scm_funds' %}
-                <div class="item-box border-normal">
-                    <div class='item-box-image'>
-                        <img class="item-image" src="https://community.cloudflare.steamstatic.com/public/shared/images/responsive/share_steam_logo.png">
-                    </div>
-                    <span class="pure-amount">{{trade.amount|floatformat}} {{trade.currency}}</span>
-                    <span class="normal">SCM funds</span>
-                </div>
-            {% elif trade.transaction_method == 'paypal' %}
-                <div class="item-box border-normal">
-                    <div class='item-box-image'>
-                        <img class="item-image" src="https://developer.valvesoftware.com/w/images/thumb/f/f9/Smallcredits.png/300px-Smallcredits.png">
-                    </div>
-                    <span class="pure-amount">{{trade.amount|floatformat}} {{trade.currency}}</span>
-                    <span class="normal">Cash</span>
-                </div>
-            {% endif %}
+            {% endwith %}
             </div>
-        {% else %}
-            <div class="items-right">
-            {% if trade.transaction_method == 'keys' %}
-                <div class="item-box border-unique">
-                    <div class='item-box-image'>
-                        <img class="item-image" src="https://steamcdn-a.akamaihd.net/apps/440/icons/key.be0a5e2cda3a039132c35b67319829d785e50352.png">
-                    </div>
-                    <span class="pure-amount">{{trade.amount|floatformat}}</span>
-                    <span class="unique">Keys</span>
-                </div>
             
-            {% elif trade.transaction_method == 'scm_funds' %}
-                <div class="item-box border-normal">
+        {% else %}
+            <div class="items-recieved">
+
+            {% with info=trade.transaction_method|get_transaction_info %}
+                <div class="item-box border-{{ info.quality }}">
                     <div class='item-box-image'>
-                        <img class="item-image" src="https://community.cloudflare.steamstatic.com/public/shared/images/responsive/share_steam_logo.png">
+                        <img class="item-image" src="{{ info.image }}">
                     </div>
-                    <span class="pure-amount">{{trade.amount|floatformat}} {{trade.currency}}</span>
-                    <span class="normal">SCM funds</span>
+                    <span class="pure-amount">
+                        {{ trade.amount|floatformat }} 
+                        {% if trade.transaction_method != 'keys' %}
+                            {{ trade.currency }}
+                        {% endif %}
+                    </span>
+                    <span class="{{ info.quality }}">{{ info.label }}</span>
                 </div>
-            {% elif trade.transaction_method == 'paypal' %}
-                <div class="item-box border-normal">
-                    <div class='item-box-image'>
-                        <img class="item-image" src="https://developer.valvesoftware.com/w/images/thumb/f/f9/Smallcredits.png/300px-Smallcredits.png">
-                    </div>
-                    <span class="pure-amount">{{trade.amount|floatformat}} {{trade.currency}}</span>
-                    <span class="normal">Cash</span>
-                </div>
-            {% endif %}
+            {% endwith %}
+
             </div>
         {% endif %}
         </div>
-        {% if trade.transaction_type == 'sale' %}
-        <div class ="transaction-titles">
-                <h4>Purchase price:</h4>
-                <h4>Total pure recieved:</h4>
-        </div>
-        <hr>
-        <div class ="transaction-titles">
-            {% for item in trade.items_sold.all %}
-                {% if item.purchase_price %}
-                    <h4>
-                        {{item.purchase_price.amount|floatformat}} 
-                        {% if item.purchase_price.currency %}
-                            {{item.purchase_price.currency}}
-                        {% endif %}
-                        {{item.purchase_price.get_transaction_method_display}}
-                    </h4>
-                {% endif %}
-            {% endfor %}
-            {% if trade.items_bought.all.exists %}
+
+        {% if trade.source_trade %}
+            {% if trade.transaction_type == 'sale' %}
+            <div class ="transaction-titles">
+                    <h4>Purchase price:</h4>
+                    <h4>Total pure recieved:</h4>
+            </div>
+            <hr>
+            <div class ="transaction-titles">
                 {% for item in trade.items_sold.all %}
-                    {% if item.sale_price %}
+                    {% if item.purchase_price %}
                         <h4>
-                            {{item.sale_price.amount|floatformat}} 
-                            {% if item.sale_price.currency %}
-                                {{item.sale_price.currency}}
-                            {% endif %}
-                            {{item.sale_price.get_transaction_method_display}}!
+                            {{ item.purchase_price|value_display }}
                         </h4>
                     {% endif %}
                 {% endfor %}
-            {% endif %}
-        </div>
-        <hr>
-        <div class="transaction-profit">
-        {% for item in trade.items_sold.all %}
-            {% if item.profit_value %}
-                <h4>
-                    Profit: {{item.profit_display}}
-                </h4>
-            {% endif %}
-        {% endfor %}
-        </div>
-        
-        
-        {% endif %}
+                {% if trade.items_bought.all.exists %}
+                    {% for item in trade.items_sold.all %}
+                        {% if item.sale_price %}
+                            <h4>
+                                {{ item.sale_price|value_display }}
+                            </h4>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <hr>
+            <div class="transaction-profit">
+            {% for item in trade.items_sold.all %}
+                {% if item.profit_value %}
+                    <h4>
+                        Profit: {{ item.profit_value|value_display }}
+                    </h4>
+                {% endif %}
+            {% endfor %}
+            </div>
+        {% endif %} 
+    {% endif %}
         <!--  
         {{trade.description}}
         {{trade.date}} -->
@@ -174,4 +153,8 @@
 {% endfor%}
 </div>
     
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'tf2folio/trade-history.js' %}"></script>
 {% endblock %}
