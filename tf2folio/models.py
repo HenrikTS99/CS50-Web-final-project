@@ -99,16 +99,13 @@ class Item(models.Model):
                 self.profit_value = profit_value
                 self.save()
 
-
     def add_purchase_price(self, value_object):
         self.purchase_price = value_object
         self.save()
 
-
     def profit_display(self):
         currency = self.profit_value.currency if self.profit_value.currency else ""
         return f'{self.profit_value.amount.normalize()} {currency} {self.profit_value.get_transaction_method_display()}'
-
 
     def __str__(self):
         return f"{self.item_title}"
@@ -135,13 +132,6 @@ class Value(models.Model):
         value.item = item
         value.save()
         return value
-
-    # Remove trailing zeroes from amount
-    def save(self, *args, **kwargs):
-        if self.amount is not None:
-            self.amount = self.amount.normalize()
-        super().save(*args, **kwargs)
-
 
     def copy(self):
         return Value(item=self.item, transaction_method=self.transaction_method, currency=self.currency, amount=self.amount)
