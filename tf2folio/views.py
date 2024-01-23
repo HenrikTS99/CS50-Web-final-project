@@ -6,6 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.db import IntegrityError
 from .models import User, Item, Transaction, Value
+from django.db.models import Q
 from .forms import ItemForm, TradeSaleForm, TradeBuyForm, TransactionForm, ItemValueForm, TradeValueForm
 from . import utils
 from django.http import JsonResponse
@@ -26,6 +27,16 @@ def trade_history(request):
     all_trades = Transaction.objects.filter(owner=request.user).order_by('-date')
     return render(request, "tf2folio/trade-history.html", {
         "all_trades": all_trades
+    })
+
+@login_required
+def item_trade_history(request, item_id):
+    # Q-objects info https://docs.djangoproject.com/en/5.0/topics/db/queries/#complex-lookups-with-q-objects
+    item_trades = Transaction.objects.filter(
+        Q(owner=request.user) & (Q(items_sold__id=item_id) | Q(items_bought__id=item_id))
+    ).order_by('-date')
+    return render(request, "tf2folio/trade-history.html", {
+        "all_trades": item_trades
     })
 
 
@@ -151,8 +162,6 @@ def get_item_html(request, item_id):
 
 @require_POST
 def register_trade(request):
-    print(request.POST)
-    print(request.POST.get('transaction_method'))
     # Get the items selected in the form
     item_list, item_recieved_list, error_response, = utils.process_items(request)
     if error_response:

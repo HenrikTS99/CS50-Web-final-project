@@ -551,7 +551,11 @@ def create_image(Item):
     for i in range(2):
         print(search_name)
         api_url = f"https://api.steamapis.com/image/item/440/{search_name}"
-        response = requests.get(api_url)
+        try:
+            response = requests.get(api_url, timeout=5)
+        except requests.exceptions.Timeout:
+            print("Request timed out")
+            break
         if response.status_code == 200:
             print("item img sucsess")
             return response.url
@@ -702,7 +706,7 @@ def get_total_sale_value_object(value_objects, item):
 
 def convert_currency(amount, from_currency, to_currency='USD'):
     if from_currency in conversion_rates_cache and to_currency in conversion_rates_cache[from_currency] and time.time() - conversion_rates_cache[from_currency][to_currency]['time'] < 3600:
-        #print(f'Using cached conversion rate for {from_currency} to {to_currency}')
+        print(f'Using cached conversion rate for {from_currency} to {to_currency}')
         return Decimal(amount/Decimal(conversion_rates_cache[from_currency][to_currency]['rate']))
     try:
         url = f'https://api.exchangerate-api.com/v4/latest/{to_currency}'
@@ -711,7 +715,7 @@ def convert_currency(amount, from_currency, to_currency='USD'):
         if from_currency not in conversion_rates_cache:
             conversion_rates_cache[from_currency] = {}
         conversion_rates_cache[from_currency][to_currency] = {'rate': data['rates'][from_currency], 'time': time.time()}
-        #print(conversion_rates_cache)
+        print(conversion_rates_cache)
         return Decimal(amount/Decimal(data['rates'][from_currency]))
     except requests.exceptions.RequestException as error:
         print('Error:', error)

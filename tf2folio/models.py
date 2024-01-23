@@ -12,7 +12,7 @@ TRANSACTION_CHOICES = [
 
 SELL_METHOD_CHOICES = [
     ('keys', 'Keys'),
-    ('scm_funds', 'Steam Wallet Funds'),
+    ('scm_funds', 'Steam Funds'),
     ('paypal', 'PayPal'),
     ('items', 'TF2 Items')
 ]
@@ -154,6 +154,8 @@ class Transaction(models.Model):
     description = models.TextField(max_length=400, null=True, blank=True)
     date = models.DateTimeField(null=True, blank=True)
     source_trade = models.BooleanField(default=False) # Means trade is a sale from a item previously bought for pure/cash. Can calculate profit made.
+    #subsequent_trades = models.ManyToManyField('Transaction', blank=True, related_name="subsequent_trades")
+    #origin_trade = models.ForeginKey('Transaction', on_delete=models.SET_NULL, null=True, blank=True, related_name='child_trades')
 
     @classmethod
     def create_trade(cls, form, user, item_list, item_recieved_list):
