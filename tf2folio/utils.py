@@ -563,7 +563,7 @@ def create_image(Item):
             print('Failed to fetch the image', 404, search_name)
             print("Testing capitalized title.")
             search_name = search_name.title()
-    return 'https://wiki.teamfortress.com/w/images/thumb/c/c4/Unknownweapon.png/256px-Unknownweapon.png'
+    return 'https://scrap.tf/img/items/warpaint/Grenade%20Launcher_407_5_0.png' # 'https://wiki.teamfortress.com/w/images/thumb/c/c4/Unknownweapon.png/256px-Unknownweapon.png'
 
 
 def get_particle_id(particle_effect):

@@ -2,7 +2,63 @@
     <h2>Register Item</h2>
     <form id="item-register-form" class="item-form" action="{% url 'new_item' %}" method="POST">
         {% csrf_token %}
-        {{item_form}}
+        
+        {{item_form.item_name}}
+
+        <h5 class="title-form">Quality</h5>
+
+        <div class="radio-select-div">
+            {% for quality in item_form.fields.quality.choices %}
+                <div class="radio-option-quality">
+                    <input type="radio" name="quality" id="quality-{{ quality.0 }}" value="{{ quality.0 }}">
+                    <label class="border-{{quality.0}} bg-{{quality.0}}" for="quality-{{ quality.0 }}">{{ quality.1 }}</label>
+                </div>
+            {% endfor %}
+        </div>
+
+        <h5 class="title-form">Filters</h5>
+
+        <div class="checkbox-div">
+            {{item_form.craftable}}
+            <label for="{{ item_form.craftable.id_for_label }}">Craftable</label>
+            
+            {{item_form.australium}}
+            <label for="{{ item_form.australium.id_for_label }}">Australium</label>
+        </div>
+
+        
+
+        {{item_form.texture_name}}
+
+        <h5 class="title-form">Wear</h5>
+
+        <div class="radio-select-div">
+            {% for wear in item_form.fields.wear.choices %}
+                <div class="radio-option">
+                    <input type="radio" name="{{ item_form.wear.html_name }}" id="wear-{{ wear.0 }}" value="{{ wear.0 }}">
+                    <label for="wear-{{ wear.0 }}">{{ wear.1 }}</label>
+                </div>
+            {% endfor %}
+        </div>
+
+        {{item_form.particle_effect}}
+
+        <h5 class="title-form">Killstreak</h5>
+
+        <div class="radio-select-div">
+            {% for killstreak in item_form.fields.killstreak.choices %}
+                <div class="radio-option">
+                    <input type="radio" name="{{ item_form.killstreak.html_name }}" id="killstreak-{{ killstreak.0 }}" value="{{ killstreak.0 }}">
+                    <label for="killstreak-{{ killstreak.0 }}">{{ killstreak.1 }}</label>
+                </div>
+            {% endfor %}
+        </div>
+
+        <h4>Old</h4>
+        
+
+
+
         <h4>Estimated Item Value</h4>
         
         <label for="{{ item_value_form.transaction_method.id_for_label }}">Value Type:</label>

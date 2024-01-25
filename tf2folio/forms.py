@@ -16,6 +16,40 @@ TRANSACTION_METHOD_PAYPAL = 'paypal'
 TRANSACTION_METHOD_ITEMS = 'items'
 
 class ItemForm(ModelForm):
+    quality = forms.ChoiceField(
+        choices=Item.QUALITY,
+        widget=forms.RadioSelect,
+    )
+    wear = forms.ChoiceField(
+        choices=[('', 'None')] + Item.WEAR_TIERS,
+        widget=forms.RadioSelect,
+        required=False,
+    )
+    killstreak = forms.ChoiceField(
+        choices=[('', 'None')] + Item.KILLSTREAK_TIERS,
+        widget=forms.RadioSelect,
+        required=False,
+    )
+    item_name = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'item-input-field', 'placeholder': 'Item Name'}),
+    )
+    texture_name = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'item-input-field', 'placeholder': 'Texture Name'}),
+        required=False,
+    )
+    particle_effect = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'item-input-field', 'placeholder': 'Particle Effect'}),
+        required=False,
+    )
+    craftable = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+        required=False, initial=True,
+    )
+    australium = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+        required=False,
+    )
+
     class Meta:
         model = Item
         fields = ("item_name", "quality", "craftable", "australium", "texture_name",

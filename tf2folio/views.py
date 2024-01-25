@@ -16,9 +16,10 @@ from django.template.loader import render_to_string
 
 @login_required
 def index(request):
-    items = request.user.owned_items.all()
-    return render(request, "tf2folio/index.html", {
-        "items": items
+    items = Item.objects.filter(Q(sold=False) & Q(owner=request.user))
+    sold_items = Item.objects.filter(Q(sold=True) & Q(owner=request.user))
+    return render(request, "tf2folio/inventory.html", {
+        "items": items, 'sold_items': sold_items
     })
 
 

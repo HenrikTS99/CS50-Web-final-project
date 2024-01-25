@@ -9,6 +9,7 @@
 <input type="checkbox" id="show-source-trades-checkbox" onclick="toggleSourceTradeDisplay()"> Show only source trades
 
 <div class="trade-display-container">
+    <h2 class="title">Trade History</h2>
 {% for trade in all_trades %}
     <div class="trade" data-source-trade="{{trade.source_trade}}">
         <div class ="transaction-titles">

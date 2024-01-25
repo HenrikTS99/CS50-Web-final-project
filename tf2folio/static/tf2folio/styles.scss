@@ -4,7 +4,8 @@ $colors: (
   unique: #FFD700,
   genuine: #4D7455,
   vintage: #476291,
-  collector: #AA0000,
+  decorated: #FAFAFA,
+  collectors: #AA0000,
   haunted: #38F3AB,
   normal: #B2B2B2,
   cash: #7b9a6d,
@@ -12,13 +13,19 @@ $colors: (
 
 @each $key, $color in $colors {
   .#{$key} {
-    color: $color;
+    color: $color !important;
   }
 }
 
 @each $key, $color in $colors {
   .border-#{$key} {
-    border-color: $color;
+    border-color: $color !important;
+  }
+}
+
+@each $key, $color in $colors {
+  .bg-#{$key} {
+    background-color: $color !important;
   }
 }
 
@@ -42,26 +49,151 @@ a {
   text-decoration: none !important;
 }
 
-.item-form,
-.form-rows {
-  display: grid;
-  justify-content: center;
-}
+
 
 .center-div {
   text-align: center;
 }
 
-
-
-.item-boxes-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+.title {
+  font-family: map-get($tf2-font, family);
+  color: map-get($tf2-font, color);
   text-align: center;
-  margin: 25px 0;
+  text-decoration: underline;
 }
 
+.title-form {
+  font-family: map-get($tf2-font, family);
+  text-align: center;
+  text-decoration: underline;
+}
+
+html {background-color: #1b2838} // set all background color
+
+/* forms */
+/* new item form */
+
+.item-form,
+.form-rows {
+  display: grid;
+  justify-content: center;
+  background-color: lightgray;
+}
+
+#trade-register {
+  
+}
+
+.btn-group input[type="radio"] {
+  display: none;
+}
+
+.checkbox-div {
+
+  label[for="id_craftable"], label[for="id_australium"] {
+    border-radius: 7px;
+    border: 1px solid #666;
+    color: #000;
+    background-color: white;
+    display: inline-block;
+    font-size: 18px;
+    margin: 5px;
+    padding: 5px;
+    cursor: pointer;
+    user-select: none;
+    box-shadow:1px 1px 1px #888;
+  }
+
+  .checkbox-input {
+    display:none;  
+  } 
+
+  .checkbox-input:checked + label[for="id_craftable"], 
+  .checkbox-input:checked + label[for="id_australium"] {
+      background-color: lightgreen;
+      box-shadow:1px 1px 4px 2px rgba(0,150,0, 1) inset;
+  }
+}
+
+.item-input-field {
+  padding: 12px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  border: 2px solid #1b2838;
+  border-radius: 5px;
+  font-size: 19px;
+}
+
+.radio-select-div {
+
+  label {
+    border-radius: 7px;
+    border: 3px solid #666;
+    color: #000;
+    background-color: white;
+    display: inline-block;
+    font-size: 18px;
+    margin: 5px;
+    padding: 5px;
+    cursor: pointer;
+    user-select: none;
+    box-shadow:1px 1px 1px #888;
+  }
+  
+  input[type="radio"] {
+    display:none;  
+  } 
+
+  .radio-option {
+    display: inline-block;
+
+    input[type="radio"]:checked ~ label {
+        background-color: lightgreen;
+        box-shadow:1px 1px 4px 2px rgba(0,150,0, 1) inset;
+    }
+  }
+
+  .radio-option-quality {
+    display: inline-block;
+
+    input[type="radio"]:checked + label {
+      opacity: 1;
+      box-shadow:1px 1px 4px 2px rgba(50,50,50, 1);
+    }
+    input[type="radio"] + label {
+        opacity: 0.7;
+    }
+  }
+}
+
+.radio {
+  display: none;
+}
+
+/* inventory */
+.inventory-display-container {
+  background-color: #1b2838;
+  padding: 20px;
+  display: grid;
+  justify-content: center;
+  text-align: center;
+
+  .item-boxes-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+    background-color: #131c27;
+    border-radius: 10px;
+    border-style: solid;
+    border-width: 2px;
+    margin: 10px;
+    padding: 8px;
+    max-width: 1400px;
+  }
+}
+
+/* item container */
 .item-box {
   background-color: #3c352e;
   display: flex;
@@ -76,7 +208,7 @@ a {
   width: 140px;
   height: 160px;
   overflow: hidden;
-  position: relative; // Add this to position the text relative to the box
+  position: relative;
 
 
   .item-box-image {
@@ -84,14 +216,14 @@ a {
     top: 0;
     left: 0;
     right: 0;
-    width: 80%; // Adjust as needed
-    height: 80%; // Adjust as needed
+    width: 80%;
+    height: 80%;
     margin: auto;
     object-fit: cover;
 
     img {
-      width: 100%; // Make the image fill its container
-      height: 100%; // Make the image fill its container
+      width: 100%;
+      height: 100%;
       object-fit: contain; // Make the image cover its container
     }
 
@@ -197,3 +329,4 @@ a {
 .sold-color {
   background-color: #571100;
 }
+
