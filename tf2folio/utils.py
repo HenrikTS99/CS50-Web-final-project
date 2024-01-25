@@ -608,15 +608,18 @@ def process_items(request):
     return item_list, item_recieved_list, None
 
 
-def validate_forms(form, valueForm):
+def validate_form(form):
     if not form.is_valid():
         print(form.errors)
         return JsonResponse({"errors": form.errors}, status=400)
-    if not valueForm.is_valid():
-        print(valueForm.errors)
-        return JsonResponse({"errors": valueForm.errors}, status=400)
     return None
 
+def validate_and_return_error(*forms):
+    for form in forms:
+        errorResponse = validate_form(form)
+        if errorResponse:
+            return errorResponse
+    return None
 
 def create_trade_response_data(trade):
     # TODO: transaction_html might not be used, consider removing from here, templates and new-trade.js in future

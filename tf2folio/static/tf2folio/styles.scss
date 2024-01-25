@@ -49,8 +49,6 @@ a {
   text-decoration: none !important;
 }
 
-
-
 .center-div {
   text-align: center;
 }
@@ -62,46 +60,42 @@ a {
   text-decoration: underline;
 }
 
-.title-form {
-  font-family: map-get($tf2-font, family);
-  text-align: center;
-  text-decoration: underline;
-}
-
 html {background-color: #1b2838} // set all background color
 
 /* forms */
 /* new item form */
 
+@mixin label-styles {
+  border-radius: 7px;
+  border: 2px solid #666;
+  color: #000;
+  background-color: white;
+  display: inline-block;
+  font-size: 18px;
+  margin: 5px;
+  padding: 5px;
+  cursor: pointer;
+  user-select: none;
+  box-shadow:1px 1px 1px #888;
+  font-weight: bold;
+}
+
 .item-form,
 .form-rows {
   display: grid;
   justify-content: center;
-  background-color: lightgray;
+  background-color: rgb(220,220,220);
 }
 
-#trade-register {
-  
-}
-
-.btn-group input[type="radio"] {
-  display: none;
+.title-form {
+  @extend .title;
+  color: black;
 }
 
 .checkbox-div {
 
   label[for="id_craftable"], label[for="id_australium"] {
-    border-radius: 7px;
-    border: 1px solid #666;
-    color: #000;
-    background-color: white;
-    display: inline-block;
-    font-size: 18px;
-    margin: 5px;
-    padding: 5px;
-    cursor: pointer;
-    user-select: none;
-    box-shadow:1px 1px 1px #888;
+    @include label-styles;
   }
 
   .checkbox-input {
@@ -127,17 +121,7 @@ html {background-color: #1b2838} // set all background color
 .radio-select-div {
 
   label {
-    border-radius: 7px;
-    border: 3px solid #666;
-    color: #000;
-    background-color: white;
-    display: inline-block;
-    font-size: 18px;
-    margin: 5px;
-    padding: 5px;
-    cursor: pointer;
-    user-select: none;
-    box-shadow:1px 1px 1px #888;
+    @include label-styles;
   }
   
   input[type="radio"] {
@@ -152,7 +136,7 @@ html {background-color: #1b2838} // set all background color
         box-shadow:1px 1px 4px 2px rgba(0,150,0, 1) inset;
     }
   }
-
+  /* for quality radio-options, displays quality colors */
   .radio-option-quality {
     display: inline-block;
 
@@ -166,9 +150,6 @@ html {background-color: #1b2838} // set all background color
   }
 }
 
-.radio {
-  display: none;
-}
 
 /* inventory */
 .inventory-display-container {

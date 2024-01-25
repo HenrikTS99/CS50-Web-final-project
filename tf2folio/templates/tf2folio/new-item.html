@@ -53,27 +53,7 @@
                 </div>
             {% endfor %}
         </div>
-
-        <h4>Old</h4>
         
-
-
-
-        <h4>Estimated Item Value</h4>
-        
-        <label for="{{ item_value_form.transaction_method.id_for_label }}">Value Type:</label>
-        {{item_value_form.transaction_method}}
-        <label for="{{ item_value_form.amount.id_for_label }}" class="amount-label" >Amount:</label>
-        {{item_value_form.amount}}
-        {{item_value_form.errors}}
-        <label for="{{ item_value_form.currency.id_for_label }}" class="currency-label">Currency:</label>
-        <input type="text" name="currency" class="currency-field" list="currencies" />
-            <datalist id="currencies">
-                {% for currency in item_value_form.fields.currency.choices %}
-                    <option value="{{ currency.0 }}">{{ currency.1 }}</option>
-                {% endfor %}
-            </datalist>
-
         <button type="submit" class="btn btn-primary">Register Item</button>
     </form>
 </div>

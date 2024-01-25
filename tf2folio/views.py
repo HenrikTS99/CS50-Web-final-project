@@ -111,7 +111,7 @@ def new_trade(request):
 
     return render(request, "tf2folio/new-trade.html", {
         "sale_form": TradeSaleForm(owner=request.user), "buy_form": TradeBuyForm(owner=request.user), 
-        "item_form": ItemForm(), "item_value_form": ItemValueForm(),
+        "item_form": ItemForm(),
         "value_form": TradeValueForm(),
         "user": request.user
     })
@@ -121,21 +121,13 @@ def new_trade(request):
 @login_required
 def register_item(request):
     form = ItemForm(request.POST)
-    itemValueForm = ItemValueForm(request.POST)
 
-    errorResponse = utils.validate_forms(form, itemValueForm)
+    errorResponse = utils.validate_form(form)
     if errorResponse:
         return errorResponse
 
     item_title, item_image, item_particle_id = utils.create_item_data(form)
     item = Item.create_item(form, request.user, item_title, item_image, item_particle_id)
-
-    # Only save estimated value object if user filled in amount field
-    form_amount = itemValueForm.cleaned_data.get('amount')
-    if form_amount is not None:
-        estimated_value = Value.create_estimated_item_value(itemValueForm, item)
-        item.estimated_price = estimated_value
-        item.save()
 
     item_html = render_to_string('tf2folio/item-template.html', {'item': item })
     response_data = {
@@ -170,7 +162,8 @@ def register_trade(request):
     
     form = TransactionForm(request.POST)
     valueForm = TradeValueForm(request.POST)
-    errorResponse = utils.validate_forms(form, valueForm)
+    
+    errorResponse = utils.validate_and_return_error(form, valueForm)
     if errorResponse:
         return errorResponse
 

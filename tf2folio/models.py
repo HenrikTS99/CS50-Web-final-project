@@ -70,7 +70,6 @@ class Item(models.Model):
     killstreak = models.CharField(max_length=20, choices=KILLSTREAK_TIERS, null=True, blank=True)
     sold = models.BooleanField(default=False)
     image_url = models.URLField(max_length=400, null=True, blank=True)
-    estimated_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="estimated_item_value", default=None, null=True, blank=True)
     purchase_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="purchase_price_value", default=None, null=True, blank=True)
     sale_price = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="sold_item_value", default=None, null=True, blank=True)
     profit_value = models.OneToOneField('Value', on_delete=models.SET_NULL, related_name="profit_value", default=None, null=True, blank=True)
@@ -119,13 +118,6 @@ class Value(models.Model):
     def create_trade_value(cls, form, trade):
         value = form.save(commit=False)
         value.transaction = trade
-        value.save()
-        return value
-
-    @classmethod
-    def create_estimated_item_value(cls, form, item):
-        value = form.save(commit=False)
-        value.item = item
         value.save()
         return value
 
