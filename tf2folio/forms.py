@@ -1,5 +1,5 @@
 from django.forms import ModelForm, inlineformset_factory
-from .models import Item, Transaction, Value
+from .models import Item, Transaction, Value, SELL_METHOD_CHOICES
 from django import forms
 from django.core.exceptions import ValidationError
 
@@ -49,6 +49,7 @@ class ItemForm(ModelForm):
         widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
         required=False,
     )
+    image_link = forms.URLField(required=False)
 
     class Meta:
         model = Item
@@ -57,6 +58,12 @@ class ItemForm(ModelForm):
 
 
 class BaseValueForm(forms.ModelForm):
+    transaction_method = forms.ChoiceField(
+            choices=SELL_METHOD_CHOICES,
+            widget=forms.RadioSelect,
+            initial=('keys', 'Keys'),
+        )
+
     class Meta:
         model = Value
         fields = ['transaction_method', 'currency', 'amount']

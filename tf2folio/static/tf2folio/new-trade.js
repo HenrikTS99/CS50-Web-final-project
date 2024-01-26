@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const itemsSoldDropdown = document.querySelector('#id_items_sold');
     const itemsBoughtDropdown = document.querySelector('#id_items_bought');
     const tradeSubmitButton = document.querySelector('#trade-submit-button');
-    const transactionMethodDropdowns = document.querySelectorAll('.transaction-method');
+    const transactionMethodRadioButtons = document.querySelectorAll('input[name="transaction_method"]');
+    const transactionMethodRadioButtons2 = document.querySelectorAll('input[name="transaction_method-2"]');
     
 
     saleButton.addEventListener('click', () => sale_form());
@@ -23,17 +24,55 @@ document.addEventListener('DOMContentLoaded', function() {
     itemsSoldDropdown.addEventListener('dblclick', (event) => {
         addItemToSelectedItems(event, 'sold')
     });
+
+    selectedItemsContainer.addEventListener('dblclick', (event) => {
+        if (event.target.closest('.item-box')) {
+            removeItemFromSelection(event);
+        }
+    });
+
+    recievedItemsContainer.addEventListener('dblclick', (event) => {
+        if (event.target.closest('.item-box')) {
+            removeItemFromSelection(event);
+        }
+    });
+
+    function removeItemFromSelection(event) {
+        let itemElement = event.target.closest('.item-box');
+        let itemId = itemElement.getAttribute('data-item-id');
+        selectedItems.delete(itemId);
+        itemElement.remove();
+
+        let itemSelectionOption = document.createElement('option');
+        itemSelectionOption.value = itemId;
+        itemSelectionOption.text = itemElement.querySelector('span').textContent;
+        itemsSoldDropdown.appendChild(itemSelectionOption);
+        itemsBoughtDropdown.appendChild(itemSelectionOption.cloneNode(true));
+    }
+
+
     document.querySelectorAll('[name="items_bought"]').forEach(item_selection => {
         item_selection.addEventListener('dblclick', (event) => {
             addItemToSelectedItems(event, 'bought')
         });
     });
 
-    transactionMethodDropdowns.forEach(dropdown => {
-        dropdown.addEventListener('change', () => {
-            handleTransactionChange(dropdown.value);
+    transactionMethodRadioButtons.forEach((radioButton, index) => {
+        radioButton.addEventListener('change', () => {
+            handleTransactionChange(radioButton.value);
+            if (radioButton.value != 'items') {
+                transactionMethodRadioButtons2[index].checked = radioButton.checked;
+            }
         });
     });
+
+    transactionMethodRadioButtons2.forEach((radioButton, index) => {
+        radioButton.addEventListener('change', () => {
+            handleTransactionChange(radioButton.value);
+            transactionMethodRadioButtons[index].checked = radioButton.checked;
+        });
+    });
+
 
     // add new item
     document.querySelectorAll('.add-item').forEach(button => {
@@ -80,12 +119,17 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             console.log("Data sent sucsessfully", data);
             // Append the new item to the page
+            
             if (item_type == 'bought' && transaction_type == 'sale') {
                 recievedItemsContainer.insertAdjacentHTML('beforeend', data.item_html);
-                itemsBoughtDropdown.remove(itemsBoughtDropdown.selectedIndex);
+                let selectedIndex = itemsBoughtDropdown.selectedIndex;
+                itemsBoughtDropdown.remove(selectedIndex);
+                itemsSoldDropdown.remove(selectedIndex);
             } else {
                 selectedItemsContainer.insertAdjacentHTML('beforeend', data.item_html);
-                itemsSoldDropdown.remove(itemsSoldDropdown.selectedIndex);
+                let selectedIndex = itemsSoldDropdown.selectedIndex;
+                itemsSoldDropdown.remove(selectedIndex);
+                itemsBoughtDropdown.remove(selectedIndex);
             }
             
         })
@@ -176,6 +220,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData(event.target);
         // add transaction type
         formData.append('transaction_type', transaction_type);
+        if (transaction_type == 'buy') {
+            formData.append('transaction_method', formData.get('transaction_method-2'));
+            formData.delete('transaction_method-2');
+        }
         formData.append('itemIds', JSON.stringify(itemIds));
         formData.append('itemRecievedIds', JSON.stringify(itemRecievedIds));
         console.log(formData);
@@ -242,44 +290,41 @@ document.addEventListener('DOMContentLoaded', function() {
         const defaultSCMCurrency = document.querySelector('#default-scm-currency').value;
         const defaultPaypalCurrency = document.querySelector('#default-paypal-currency').value;
 
-        function setDisplayAndValue(displayValue, fieldValue = '') {
+        function setDisplayAndValue(displayValue) {
             amountFields.forEach((field, index) => {
                 field.style.display = displayValue;
                 amountLabels[index].style.display = displayValue;
-                field.value = fieldValue;
                 currencyFields[index].style.display = displayValue;
                 currencyLabels[index].style.display = displayValue;
-                currencyFields[index].value = fieldValue;
-                transactionMethodDropdowns[index].value = transactionMethod;
             });
         }
 
         if (transactionMethod == 'paypal' || transactionMethod == 'scm_funds') {
             setDisplayAndValue('block');
-            if (transactionMethod == 'paypal') {
-                currencyFields.forEach(field => {
-                    field.value = defaultPaypalCurrency;
-                });
-            } else if (transactionMethod == 'scm_funds') {
-                currencyFields.forEach(field => {
-                    field.value = defaultSCMCurrency;
-                });
-            }
+            const defaultCurrency = transactionMethod == 'paypal' ? defaultPaypalCurrency : defaultSCMCurrency;
+            currencyFields.forEach(field => {
+                field.value = defaultCurrency;
+            });
         } else if (transactionMethod == 'keys') {
             setDisplayAndValue('block');
             currencyFields.forEach(field => {
                 field.style.display = 'none';
             });
         } else if (transactionMethod == 'items') {
-            // Item value dosent have transactionMethod items, default to keys
+            // If 'items' selected, default option 2 to 'keys'
             setDisplayAndValue('none');
-            document.querySelector('#id_item_value-0-transaction_method').value = 'keys';
-            document.getElementById('id_item_value-0-amount').style.display = 'block';
-            document.querySelector("label[for='id_item_value-0-amount']").style.display = 'block';
+            const keysRadioButton2 = [...transactionMethodRadioButtons2].find(radioButton2 => radioButton2.value == 'keys');
+            if (keysRadioButton2) {
+                keysRadioButton2.checked = true;
+                if (amountFields[1] && amountLabels[1]) {
+                    amountFields[1].style.display = 'block';
+                    amountLabels[1].style.display = 'block';
+                }
+            }
         }
     }
     // Start with the first transaction method dropdown
-    handleTransactionChange(transactionMethodDropdowns[0].value);
+    handleTransactionChange('keys');
 });
 
 

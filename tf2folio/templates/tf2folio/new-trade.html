@@ -2,57 +2,65 @@
 {% load static %}
 
 {% block body %}
-    <div id="trade-register" class="center-div">
+    <div id="trade-register" class="trade-register-div">
         <div id="trade-register-error" class="alert alert-danger" role="alert" style="display: none;"></div>
-        <h2>Register Trade</h2>
-        <h4>Selected Items:</h4>
-        <div id="selected-items" class="item-boxes-container">
+        <h2 class="title-form">Register Trade</h2>
+
+        <h4 class="title-form">Selected Items:</h4>
+        <div id="selected-items" class="item-container">
         </div>
 
-        <h5>Transaction Type</h5>
+        <h5 class="title-form">Transaction Type</h5>
         <button class="btn btn-sm btn-primary" id="sale">Sale</button>
         <button class="btn btn-sm btn-outline-primary" id="buy">Purchase</button>
 
-        <form class="item-form" id="sale-form">
+        <form class="trade-form" id="sale-form">
             {% csrf_token %}
-            <div class="form-rows">
-                <label for="{{ sale_form.items_sold.id_for_label }}">Select Items Sold:</label>
-                {{sale_form.items_sold}}
+            <label for="{{ sale_form.items_sold.id_for_label }}">Select Items Sold:</label>
+            {{sale_form.items_sold}}
 
-                <button type="button" class="btn btn-sm btn-outline-primary add-item">Add Item</button>
+            <button type="button" class="btn btn-sm btn-outline-primary add-item">Add Item</button>
 
-                <h5>Sold For:</h5>
-                
-                <label for="{{ value_form.transaction_method.id_for_label }}">Transaction Method:</label>
-                {{value_form.transaction_method}}
-                <label for="{{ value_form.amount.id_for_label }}" class="amount-label" >Amount:</label>
-                {{value_form.amount}}
-                {{value_form.errors}}
-                <label for="{{ value_form.currency.id_for_label }}" class="currency-label">Currency:</label>
-                <input type="text" name="currency" class="currency-field" list="currencies" />
-                    <datalist id="currencies">
-                        {% for currency in value_form.fields.currency.choices %}
-                            <option value="{{ currency.0 }}">{{ currency.1 }}</option>
-                        {% endfor %}
-                    </datalist>
-                
-                <!-- User's default currencies -->
-                <input type="hidden" id="default-scm-currency" value="{{ user.default_scm_currency }}">
-                <input type="hidden" id="default-paypal-currency" value="{{ user.default_paypal_currency }}">
+            <h5>Sold For:</h5>
+            
+            <label for="{{ value_form.transaction_method.id_for_label }}">Transaction Method:</label>
 
-                <label for="{{ sale_form.items_bought.id_for_label }}">Items Recieved:</label>
-                <div id="recieved-items" class="item-boxes-container"></div>
-                {{sale_form.items_bought}}
-                <button type="button" class="btn btn-sm btn-outline-primary add-item" id="add-recieved-item" >Add Item</button>
-
-                <label for="{{ sale_form.description.id_for_label }}">Description:</label>
-                {{sale_form.description}}
+            <div class="radio-select-div">
+                {% for method in value_form.fields.transaction_method.choices %}
+                    <div class="radio-option">
+                        <input type="radio" name="transaction_method" id="method-{{ method.0 }}" value="{{ method.0 }}" {% if forloop.first %}checked{% endif %}>
+                        <label for="method-{{ method.0 }}">{{ method.1 }}</label>
+                    </div>
+                {% endfor %}
             </div>
+
+            <label for="{{ value_form.amount.id_for_label }}" class="amount-label" >Amount:</label>
+            {{value_form.amount}}
+            {{value_form.errors}}
+            <label for="{{ value_form.currency.id_for_label }}" class="currency-label">Currency:</label>
+            <input type="text" name="currency" class="currency-field" list="currencies" />
+                <datalist id="currencies">
+                    {% for currency in value_form.fields.currency.choices %}
+                        <option value="{{ currency.0 }}">{{ currency.1 }}</option>
+                    {% endfor %}
+                </datalist>
+            
+            <!-- User's default currencies -->
+            <input type="hidden" id="default-scm-currency" value="{{ user.default_scm_currency }}">
+            <input type="hidden" id="default-paypal-currency" value="{{ user.default_paypal_currency }}">
+
+            <h4 class="title-form">Items Recieved:</h4>
+            <div id="recieved-items" class="item-container"></div>
+            {{sale_form.items_bought}}
+            <button type="button" class="btn btn-sm btn-outline-primary add-item" id="add-recieved-item" >Add Item</button>
+
+            <label for="{{ sale_form.description.id_for_label }}">Description:</label>
+            {{sale_form.description}}
             <button type="submit" form="sale-form" id="trade-submit-button" class="btn btn-primary">Register Salse</button>
         </form>
 
         
-        <form class="item-form" id="buy-form">
+        <form class="trade-form" id="buy-form">
             {% csrf_token %}
             <div class="form-rows">
                 <label for="{{ buy_form.items_bought.id_for_label }}">Select Items Bought:</label>
@@ -63,7 +71,15 @@
                 <h5>Bought For:</h5>
 
                 <label for="{{ value_form.transaction_method.id_for_label }}">Transaction Method:</label>
-                {{value_form.transaction_method}}
+                <div class="radio-select-div">
+                    {% for method in value_form.fields.transaction_method.choices|slice:":-1" %}
+                        <div class="radio-option">
+                            <input type="radio" name="transaction_method-2" id="method-{{ method.0 }}" value="{{ method.0 }}" {% if forloop.first %}checked{% endif %}>
+                            <label for="method-{{ method.0 }}">{{ method.1 }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+
                 <label for="{{ value_form.amount.id_for_label }}" class="amount-label" >Amount:</label>
                 {{value_form.amount}}
                 {{value_form.errors}}

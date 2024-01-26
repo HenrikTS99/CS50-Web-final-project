@@ -121,12 +121,18 @@ def new_trade(request):
 @login_required
 def register_item(request):
     form = ItemForm(request.POST)
-
+    print(form)
     errorResponse = utils.validate_form(form)
     if errorResponse:
         return errorResponse
 
     item_title, item_image, item_particle_id = utils.create_item_data(form)
+
+    # If user has entered an image link, use that instead of generated image
+    item_image_link = form.cleaned_data.get("image_link")
+    if item_image_link:
+        item_image = item_image_link
+
     item = Item.create_item(form, request.user, item_title, item_image, item_particle_id)
 
     item_html = render_to_string('tf2folio/item-template.html', {'item': item })
@@ -137,6 +143,28 @@ def register_item(request):
     }
     return JsonResponse(response_data, status=201)
 
+@require_POST
+@login_required
+def generate_image_url(request):
+
+    form = ItemForm(request.POST)
+    
+    errorResponse = utils.validate_form(form)
+    if errorResponse:
+        return errorResponse
+
+    item_title, item_image, item_particle_id = utils.create_item_data(form)
+
+    if not item_image:
+        return JsonResponse({"error": "Image could not be generated."}, status=404)
+
+    response_data = {
+        "message": "image generated successfully.",
+        "image_url": item_image,
+        "particle_id": item_particle_id,
+        "item_title": item_title
+    }
+    return JsonResponse(response_data, status=201)
 
 @require_POST
 def get_item_html(request, item_id):
@@ -144,7 +172,6 @@ def get_item_html(request, item_id):
         item = Item.objects.get(pk=item_id)
     except Item.DoesNotExist:
         return JsonResponse({"error": "Item not found."}, status=404)
-
     item_html = render_to_string('tf2folio/item-template.html', {'item': item })
     response_data = {
             "message": "Data sent successfully.",

@@ -62,6 +62,9 @@ a {
 
 html {background-color: #1b2838} // set all background color
 
+// body {
+//   background-color: #1b2838;
+// }
 /* forms */
 /* new item form */
 
@@ -71,8 +74,8 @@ html {background-color: #1b2838} // set all background color
   color: #000;
   background-color: white;
   display: inline-block;
-  font-size: 18px;
-  margin: 5px;
+  font-size: 13px;
+  margin: 2px;
   padding: 5px;
   cursor: pointer;
   user-select: none;
@@ -80,11 +83,27 @@ html {background-color: #1b2838} // set all background color
   font-weight: bold;
 }
 
+#item-register {
+  padding:5px;
+}
+
+.item-form {
+  background-color: rgb(230, 230, 230);
+  box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -100px 100px 0px inset, 
+      rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, 
+          rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 62px 50px;
+  border-radius: 17px;
+  max-width: 700px;
+  min-width: 300px;
+  padding: 30px;
+  margin: 50px auto;
+}
+
 .item-form,
+.trade-form,
 .form-rows {
   display: grid;
   justify-content: center;
-  background-color: rgb(220,220,220);
 }
 
 .title-form {
@@ -92,8 +111,12 @@ html {background-color: #1b2838} // set all background color
   color: black;
 }
 
+/* Item register form */
 .checkbox-div {
-
+  display: flex;
+  justify-content: center;
+  width:100%;
+  
   label[for="id_craftable"], label[for="id_australium"] {
     @include label-styles;
   }
@@ -110,15 +133,27 @@ html {background-color: #1b2838} // set all background color
 }
 
 .item-input-field {
-  padding: 12px;
+  padding: 5px;
   margin: 8px 0;
   box-sizing: border-box;
   border: 2px solid #1b2838;
   border-radius: 5px;
-  font-size: 19px;
+  font-size: 15px;
+}
+
+@media (max-width: 600px) {
+  .item-input-field {
+    font-size: 14px;
+    padding: 3px;
+    margin: 4px 0;
+    border: 1px solid #1b2838;
+  }
 }
 
 .radio-select-div {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
 
   label {
     @include label-styles;
@@ -149,6 +184,46 @@ html {background-color: #1b2838} // set all background color
     }
   }
 }
+
+.item-box-div {
+  display: flex;
+  justify-content: center;
+}
+
+/* Trade register form */
+.trade-register-div {
+  text-align: center;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.item-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
+  background-color: #131c27;
+  border-radius: 10px;
+  border-style: solid;
+  border-width: 2px;
+  margin: 10px auto;
+  padding: 8px;
+  max-width: 100%;
+  min-width: 800px;
+  min-height: 180px;
+}
+
+select {
+  width: 100%;
+  padding: 10px;
+  margin: auto;
+  border-radius: 5px;
+  border: 2px solid black;
+  font-size: 16px;
+  color: #333;
+  max-height:200px;
+}
+
 
 
 /* inventory */
