@@ -111,6 +111,10 @@ class TradeValueForm(BaseValueForm):
 
 
 class TransactionForm(ModelForm):
+    description = forms.CharField(
+        widget=forms.Textarea(attrs={'class': 'textarea-notes', 'placeholder': 'Notes'}),
+        required=False,
+    )
     class Meta:
         model = Transaction
         fields = ["transaction_type", "description"]

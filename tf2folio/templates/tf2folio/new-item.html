@@ -12,7 +12,7 @@
         {% for quality in item_form.fields.quality.choices %}
             <div class="radio-option-quality">
                 <input type="radio" name="quality" id="quality-{{ quality.0 }}" value="{{ quality.0 }}">
-                <label class="border-{{quality.0}} bg-{{quality.0}}" for="quality-{{ quality.0 }}">{{ quality.1 }}</label>
+                <label class=" bg-{{quality.0}}" for="quality-{{ quality.0 }}">{{ quality.1 }}</label>
             </div>
         {% endfor %}
     </div>
@@ -57,7 +57,7 @@
 
     <!-- Add an image element -->
 
-    <h5 class="title-form">Item Preview:</h5>
+    <h5 class="title-form">Item Preview</h5>
 
     <div class="item-box-div">
         <div class="item-box border-{{item.quality}}">

@@ -2,77 +2,97 @@
 {% load static %}
 
 {% block body %}
-    <div id="trade-register" class="trade-register-div">
-        <div id="trade-register-error" class="alert alert-danger" role="alert" style="display: none;"></div>
-        <h2 class="title-form">Register Trade</h2>
+    <div class="trade-display-container">
+        <h2 class="title">Register trade</h2>
+        <div class="trade">
+            <div class="transaction-titles">
+                <h4>Sold:</h4>
+                <h4>Recieved:</h4>
+            </div>
+            <div class="trade-items-container">
+                <div id="selected-items" class="items-sold">
 
-        <h4 class="title-form">Selected Items:</h4>
-        <div id="selected-items" class="item-container">
+                </div>
+                <span class="trade-icon">⇄</span>
+                <div id="recieved-items" class="items-recieved">
+
+                </div>
+            </div>
+            <hr>
+            <div class="item-selection">
+                <div class="items-sold-selection">
+                    <div>
+                        <h5 class="title" id="sold-selection-title">Add sold item</h5>
+                        
+                        {{sale_form.items_sold}}
+                        <button type="button" class="btn btn-sm btn-outline-info add-item">Add Item</button>
+                    </div>
+                </div>
+                <div class="items-recieved-selection">
+                    <div>
+                        <h5 class="title">Add recieved item</h5>
+                        {{sale_form.items_bought}}
+                        <button type="button" class="btn btn-sm btn-outline-info add-item" id="add-recieved-item" >Add Item</button>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <h5 class="title-form">Transaction Type</h5>
-        <button class="btn btn-sm btn-primary" id="sale">Sale</button>
-        <button class="btn btn-sm btn-outline-primary" id="buy">Purchase</button>
+    <div id="trade-register-error" class="alert bg-danger" role="alert" style="display: none;">
+        {% for error in form.errors %}
+            {{ error }}
+        {% endfor %}
+    </div>
+
+    <div id="trade-register" class="trade-register-div">
+        <h5 class="title">Transaction Type</h5>
+        <button class="btn btn-primary" id="sale">Sale</button>
+        <button class="btn btn-outline-primary" id="buy">Purchase</button>
 
         <form class="trade-form" id="sale-form">
             {% csrf_token %}
-            <label for="{{ sale_form.items_sold.id_for_label }}">Select Items Sold:</label>
-            {{sale_form.items_sold}}
+            <div class="form-rows">
 
-            <button type="button" class="btn btn-sm btn-outline-primary add-item">Add Item</button>
-
-            <h5>Sold For:</h5>
-            
-            <label for="{{ value_form.transaction_method.id_for_label }}">Transaction Method:</label>
-
-            <div class="radio-select-div">
-                {% for method in value_form.fields.transaction_method.choices %}
-                    <div class="radio-option">
-                        <input type="radio" name="transaction_method" id="method-{{ method.0 }}" value="{{ method.0 }}" {% if forloop.first %}checked{% endif %}>
-                        <label for="method-{{ method.0 }}">{{ method.1 }}</label>
-                    </div>
-                {% endfor %}
-            </div>
-
-            <label for="{{ value_form.amount.id_for_label }}" class="amount-label" >Amount:</label>
-            {{value_form.amount}}
-            {{value_form.errors}}
-            <label for="{{ value_form.currency.id_for_label }}" class="currency-label">Currency:</label>
-            <input type="text" name="currency" class="currency-field" list="currencies" />
-                <datalist id="currencies">
-                    {% for currency in value_form.fields.currency.choices %}
-                        <option value="{{ currency.0 }}">{{ currency.1 }}</option>
+                <label class="title" for="{{ value_form.transaction_method.id_for_label }}">Transaction Method:</label>
+                <div class="radio-select-div">
+                    {% for method in value_form.fields.transaction_method.choices %}
+                        <div class="radio-option">
+                            <input type="radio" name="transaction_method" id="method-{{ method.0 }}" value="{{ method.0 }}" {% if forloop.first %}checked{% endif %}>
+                            <label for="method-{{ method.0 }}">{{ method.1 }}</label>
+                        </div>
                     {% endfor %}
-                </datalist>
-            
-            <!-- User's default currencies -->
-            <input type="hidden" id="default-scm-currency" value="{{ user.default_scm_currency }}">
-            <input type="hidden" id="default-paypal-currency" value="{{ user.default_paypal_currency }}">
+                </div>
 
-            <h4 class="title-form">Items Recieved:</h4>
-            <div id="recieved-items" class="item-container"></div>
-            {{sale_form.items_bought}}
-            <button type="button" class="btn btn-sm btn-outline-primary add-item" id="add-recieved-item" >Add Item</button>
+                <div class="trade-input-field">
+                    <label for="{{ value_form.amount.id_for_label }}" class="amount-label title" >Amount:</label>
+                    {{value_form.amount}}
+                </div>
+                
 
-            <label for="{{ sale_form.description.id_for_label }}">Description:</label>
-            {{sale_form.description}}
-            <button type="submit" form="sale-form" id="trade-submit-button" class="btn btn-primary">Register Salse</button>
+                <div class="trade-input-field">
+                    <label for="{{ value_form.currency.id_for_label }}" class="currency-label title">Currency:</label>
+                    <input type="text" name="currency" class="currency-field" list="currencies" />
+                        <datalist id="currencies">
+                            {% for currency in value_form.fields.currency.choices %}
+                                <option value="{{ currency.0 }}">{{ currency.1 }}</option>
+                            {% endfor %}
+                        </datalist>
+                </div>
+                
+                {{sale_form.description}}
+                <button type="submit" form="sale-form" id="trade-submit-button" class="btn btn-primary">Register Sale</button>
+            </div>
         </form>
 
-        
+
         <form class="trade-form" id="buy-form">
             {% csrf_token %}
             <div class="form-rows">
-                <label for="{{ buy_form.items_bought.id_for_label }}">Select Items Bought:</label>
-                {{buy_form.items_bought}}
 
-                <button type="button" class="btn btn-sm btn-outline-primary add-item">Add Item</button>
-
-                <h5>Bought For:</h5>
-
-                <label for="{{ value_form.transaction_method.id_for_label }}">Transaction Method:</label>
+                <label class="title" for="{{ value_form.transaction_method.id_for_label }}">Transaction Method:</label>
                 <div class="radio-select-div">
-                    {% for method in value_form.fields.transaction_method.choices|slice:":-1" %}
+                    {% for method in value_form.fields.transaction_method.choices|slice:":-1" %} <!-- Remove the last choice, which is "items" -->
                         <div class="radio-option">
                             <input type="radio" name="transaction_method-2" id="method-{{ method.0 }}" value="{{ method.0 }}" {% if forloop.first %}checked{% endif %}>
                             <label for="method-{{ method.0 }}">{{ method.1 }}</label>
@@ -80,26 +100,34 @@
                     {% endfor %}
                 </div>
 
-                <label for="{{ value_form.amount.id_for_label }}" class="amount-label" >Amount:</label>
-                {{value_form.amount}}
-                {{value_form.errors}}
-                <label for="{{ value_form.currency.id_for_label }}" class="currency-label">Currency:</label>
-                <input type="text" name="currency" class="currency-field" list="currencies" />
-                    <datalist id="currencies">
-                        {% for currency in value_form.fields.currency.choices %}
-                            <option value="{{ currency.0 }}">{{ currency.1 }}</option>
-                        {% endfor %}
-                    </datalist>
+                <div class="trade-input-field">
+                    <label for="{{ value_form.amount.id_for_label }}" class="amount-label title" >Amount:</label>
+                    {{value_form.amount}}
+                </div>
 
-                <label for="{{ buy_form.description.id_for_label }}">Description:</label>
+                
+
+                <div class="trade-input-field">
+                    <label for="{{ value_form.currency.id_for_label }}" class="currency-label title">Currency:</label>
+                    <input type="text" name="currency" class="currency-field" list="currencies" />
+                        <datalist id="currencies">
+                            {% for currency in value_form.fields.currency.choices %}
+                                <option value="{{ currency.0 }}">{{ currency.1 }}</option>
+                            {% endfor %}
+                        </datalist>
+                </div>
+
                 {{buy_form.description}}
-
+                <button type="submit" form="buy-form" id="trade-submit-button" class="btn btn-primary">Register Purchase</button>
             </div>
-            <button type="submit" form="buy-form" id="trade-submit-button" class="btn btn-primary">Register Purchase</button>
+            
         </form>
-        
+
     </div>
 
+    <!-- User's default currencies -->
+    <input type="hidden" id="default-scm-currency" value="{{ user.default_scm_currency }}">
+    <input type="hidden" id="default-paypal-currency" value="{{ user.default_paypal_currency }}">
 
     <div id="item-register">
         {% include 'tf2folio/new-item.html' %}

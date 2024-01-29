@@ -3,9 +3,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const buyButton = document.querySelector('#buy');
     const saleForm = document.querySelector('#sale-form');
     const buyForm = document.querySelector('#buy-form');
+    const transactionTitles = document.querySelectorAll('.transaction-titles *');
     const itemRegisterForm = document.querySelector('#item-register-form');
     const itemRegisterSection = document.querySelector('#item-register');
     const tradeRegisterSection = document.querySelector('#trade-register');
+    const tradeDisplaySection = document.querySelector('.trade-display-container');
     const selectedItemsContainer = document.getElementById('selected-items');
     const recievedItemsContainer = document.getElementById('recieved-items');
     const itemsSoldDropdown = document.querySelector('#id_items_sold');
@@ -15,8 +17,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const transactionMethodRadioButtons2 = document.querySelectorAll('input[name="transaction_method-2"]');
     
 
-    saleButton.addEventListener('click', () => sale_form());
-    buyButton.addEventListener('click', () => buy_form());
+    saleButton.addEventListener('click', () => {
+        transaction_type = 'sale';
+        toggleForm();
+        //sale_trade();
+    });
+
+    buyButton.addEventListener('click', () => {
+        transaction_type = 'buy';
+        toggleForm();
+        clearRecievedItems();
+    });
+
+    
     document.querySelector('#buy-form').style.display = 'none';
     transaction_type = 'sale';
     itemRegisterSection.style.display = 'none';
@@ -27,29 +40,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     selectedItemsContainer.addEventListener('dblclick', (event) => {
         if (event.target.closest('.item-box')) {
-            removeItemFromSelection(event);
+            getTargetItem(event);
         }
     });
 
     recievedItemsContainer.addEventListener('dblclick', (event) => {
         if (event.target.closest('.item-box')) {
-            removeItemFromSelection(event);
+            getTargetItem(event);
         }
     });
-
-    function removeItemFromSelection(event) {
-        let itemElement = event.target.closest('.item-box');
-        let itemId = itemElement.getAttribute('data-item-id');
-        selectedItems.delete(itemId);
-        itemElement.remove();
-
-        let itemSelectionOption = document.createElement('option');
-        itemSelectionOption.value = itemId;
-        itemSelectionOption.text = itemElement.querySelector('span').textContent;
-        itemsSoldDropdown.appendChild(itemSelectionOption);
-        itemsBoughtDropdown.appendChild(itemSelectionOption.cloneNode(true));
-    }
-
 
     document.querySelectorAll('[name="items_bought"]').forEach(item_selection => {
         item_selection.addEventListener('dblclick', (event) => {
@@ -138,34 +137,54 @@ document.addEventListener('DOMContentLoaded', function() {
         })
     }
 
-    function sale_form() {
-        transaction_type = 'sale';
-        saleButton.className = 'btn btn-sm btn-primary'
-        buyButton.className = 'btn btn-sm btn-outline-primary';
-        document.querySelector('#sale-form').style.display = 'block';
-        document.querySelector('#buy-form').style.display = 'none';
+    function getTargetItem(event) {
+        let itemElement = event.target.closest('.item-box');
+        removeItemFromSelection(itemElement);
     }
 
-    function buy_form() {
-        transaction_type = 'buy';
-        buyButton.className = 'btn btn-sm btn-primary';
-        saleButton.className = 'btn btn-sm btn-outline-primary';
-        document.querySelector('#sale-form').style.display = 'none';
-        document.querySelector('#buy-form').style.display = 'block';
+    function clearRecievedItems() {
+        Array.from(recievedItemsContainer.children).forEach(item => {
+            removeItemFromSelection(item);
+        });
+    }
+
+    function removeItemFromSelection(itemElement) {
+        let itemId = itemElement.getAttribute('data-item-id');
+        selectedItems.delete(itemId);
+        itemElement.remove();
+        let itemSelectionOption = document.createElement('option');
+        itemSelectionOption.value = itemId;
+        itemSelectionOption.text = itemElement.querySelector('span').textContent;
+        itemsSoldDropdown.appendChild(itemSelectionOption);
+        itemsBoughtDropdown.appendChild(itemSelectionOption.cloneNode(true));
+    }
+
+
+
+    function toggleForm() {
+        saleButton.className = (transaction_type == 'sale') ? 'btn btn-primary' : 'btn btn-outline-primary';
+        buyButton.className = (transaction_type == 'buy') ? 'btn btn-primary' : 'btn btn-outline-primary';
+        saleForm.style.display = (transaction_type == 'sale') ? 'block' : 'none';
+        buyForm.style.display = (transaction_type == 'buy') ? 'block' : 'none';
+        // Change titles and hide recieved items selection
+        document.querySelector('.items-recieved-selection').style.display = (transaction_type == 'sale') ? 'block' : 'none';
+        document.querySelector('#sold-selection-title').textContent = (transaction_type == 'sale') ? 'Add sold item' : 'Add bought item';
+        transactionTitles[0].textContent = (transaction_type == 'sale') ? 'Sold' : 'Bought';
+        transactionTitles[1].textContent = (transaction_type == 'sale') ? 'Recieved' : 'Paid';
     }
 
     function register_item(button) {
-        console.log(button);
+        tradeDisplaySection.style.display = 'none';
         tradeRegisterSection.style.display = 'none';
         itemRegisterSection.style.display = 'block';
         if (button.id == 'add-recieved-item') {
             itemRegisterForm.className += ' recieved-item-form';
-            console.log(button.id);
         }
     }
 
     function add_item(event) {
         event.preventDefault();
+        tradeDisplaySection.style.display = 'grid';
         tradeRegisterSection.style.display = 'block';
         itemRegisterSection.style.display = 'none';
 
@@ -286,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const amountFields = document.querySelectorAll('.amount-field');
         const amountLabels = document.querySelectorAll(".amount-label");
         const currencyFields = document.querySelectorAll('.currency-field');
-        const currencyLabels = document.querySelectorAll(".currency-label");
+        const currencyLabels = document.querySelectorAll('.currency-label');
         const defaultSCMCurrency = document.querySelector('#default-scm-currency').value;
         const defaultPaypalCurrency = document.querySelector('#default-paypal-currency').value;
 
@@ -299,6 +318,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
+        function setCurrencyDisplayAndValue(displayValue) {
+            currencyFields.forEach((field, index) => {
+                field.style.display = 'none';
+                currencyLabels[index].style.display = displayValue;
+            });
+        }
+
         if (transactionMethod == 'paypal' || transactionMethod == 'scm_funds') {
             setDisplayAndValue('block');
             const defaultCurrency = transactionMethod == 'paypal' ? defaultPaypalCurrency : defaultSCMCurrency;
@@ -307,9 +333,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else if (transactionMethod == 'keys') {
             setDisplayAndValue('block');
-            currencyFields.forEach(field => {
-                field.style.display = 'none';
-            });
+            setCurrencyDisplayAndValue('none');
+        
         } else if (transactionMethod == 'items') {
             // If 'items' selected, default option 2 to 'keys'
             setDisplayAndValue('none');

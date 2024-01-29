@@ -78,39 +78,44 @@
                 </a>
             {% endfor %}
 
-            {% with transaction=trade.transaction_method|get_transaction_info %}
-                <div class="item-box border-{{ transaction.quality }}">
-                    <div class='item-box-image'>
-                        <img class="item-image" src="{{ transaction.image }}">
-                    </div>
-                    <span class="pure-amount">
-                        {{ trade.amount|floatformat:-2 }} 
-                        {% if trade.transaction_method != 'keys' %}
-                            {{ trade.currency }}
-                        {% endif %}
-                    </span>
-                    <span class="{{ transaction.quality }}">{{ transaction.label }}</span>
-                </div>
-            {% endwith %}
+            {% if trade.transaction_method != None %}
+                {% with transaction=trade.transaction_method|get_transaction_info %}
+                    
+                        <div class="item-box border-{{ transaction.quality }}">
+                            <div class='item-box-image'>
+                                <img class="item-image" src="{{ transaction.image }}">
+                            </div>
+                            <span class="pure-amount">
+                                {{ trade.amount|floatformat:-2 }} 
+                                {% if trade.transaction_method != 'keys' %}
+                                    {{ trade.currency }}
+                                {% endif %}
+                            </span>
+                            <span class="{{ transaction.quality }}">{{ transaction.label }}</span>
+                        </div>
+                {% endwith %}
+            {% endif %}
             </div>
             
         {% else %}
             <div class="items-recieved">
 
-            {% with transaction=trade.transaction_method|get_transaction_info %}
-                <div class="item-box border-{{ transaction.quality }}">
-                    <div class='item-box-image'>
-                        <img class="item-image" src="{{ transaction.image }}">
+            {% if trade.transaction_method != None %}
+                {% with transaction=trade.transaction_method|get_transaction_info %}
+                    <div class="item-box border-{{ transaction.quality }}">
+                        <div class='item-box-image'>
+                            <img class="item-image" src="{{ transaction.image }}">
+                        </div>
+                        <span class="pure-amount">
+                            {{ trade.amount|floatformat:-2 }} 
+                            {% if trade.transaction_method != 'keys' %}
+                                {{ trade.currency }}
+                            {% endif %}
+                        </span>
+                        <span class="{{ transaction.quality }}">{{ transaction.label }}</span>
                     </div>
-                    <span class="pure-amount">
-                        {{ trade.amount|floatformat:-2 }} 
-                        {% if trade.transaction_method != 'keys' %}
-                            {{ trade.currency }}
-                        {% endif %}
-                    </span>
-                    <span class="{{ transaction.quality }}">{{ transaction.label }}</span>
-                </div>
-            {% endwith %}
+                {% endwith %}
+            {% endif %}
 
             </div>
         {% endif %}

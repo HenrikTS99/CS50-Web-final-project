@@ -182,6 +182,7 @@ def get_item_html(request, item_id):
 
 @require_POST
 def register_trade(request):
+    print(request.POST)
     # Get the items selected in the form
     item_list, item_recieved_list, error_response, = utils.process_items(request)
     if error_response:
