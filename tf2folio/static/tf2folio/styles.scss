@@ -73,7 +73,7 @@ body {
 
 @mixin label-styles {
   border-radius: 7px;
-  border: 2px solid #666;
+  border: 1px solid #666;
   color: #000;
   background-color: white;
   display: inline-block;
@@ -82,7 +82,7 @@ body {
   padding: 5px;
   cursor: pointer;
   user-select: none;
-  box-shadow:1px 1px 1px #888;
+
   font-weight: bold;
   color: white;
   background-color: black;
@@ -192,11 +192,11 @@ body {
       box-shadow:1px 1px 4px 2px rgba(200,200,200, 0.8);
       color: black;
       border-radius: 5px;
-      border: 2px solid rgb(200,200,200);
+      border: 1px solid rgb(200,200,200);
     }
 
     input[type="radio"] + label {
-        opacity: 0.9;
+        opacity: 0.8;
         color: black;
     }
   }
@@ -262,12 +262,12 @@ body {
 .trade-input-field {
   display: flex;
   align-items: center;
-  width: 80%;
+  width: 60%;
   margin: auto;
 
   label, input {
-    padding: 5px;
-    margin: 5px;
+    padding: 2px;
+    margin: 2px;
   }
   label {
     text-align: left;
@@ -394,7 +394,7 @@ input[type=number]::-webkit-outer-spin-button {
 
 .trade-display-container {
   background-color: #1b2838;
-  padding: 20px;
+  padding-top: 20px;
   display: grid;
   justify-content: center;
 }
@@ -512,7 +512,7 @@ nav[aria-label="Page navigation all trades"] {
     border-color: #666;
   }
   .page-link:hover {
-    background-color: darken($highlight-background, 5%);
+    background-color: darken($highlight-background, 10%);
   }
   .disabled .page-link{
     background-color: lighten($highlight-background, 4%) !important;

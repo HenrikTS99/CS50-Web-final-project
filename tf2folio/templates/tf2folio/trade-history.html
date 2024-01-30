@@ -35,12 +35,12 @@
                         " data-item-id="{{item.id}}">
                         <div class='item-box-image'>
                             {% if item.particle_id %}
-                                <img class="particle-image" src="static/tf2folio/particles/{{item.particle_id}}_188x188.png">
+                                <img class="particle-image" src="{% static 'tf2folio/particles/'|add:item.particle_id|add:'_188x188.png' %}">
                             {% endif %}
                             {% if item.image_url %}
                                 <img class="item-image" src="{{item.image_url}}">
                             {% else %}
-                                <img class="item-image" src="static/tf2folio/images/questionmark.webp">
+                                <img class="item-image" src="{% static 'tf2folio/images/questionmark.webp' %}">
                             {% endif %}
                         </div>
                         <span class="{{item.quality}}">{{item.item_title}}</span>
@@ -55,12 +55,12 @@
                     <div class="item-box border-{{item.quality}}" data-item-id="{{item.id}}">
                         <div class='item-box-image'>
                             {% if item.particle_id %}
-                                <img class="particle-image" src="static/tf2folio/particles/{{item.particle_id}}_188x188.png">
+                                <img class="particle-image" src="{% static 'tf2folio/particles/'|add:item.particle_id|add:'_188x188.png' %}">
                             {% endif %}
                             {% if item.image_url %}
                                 <img class="item-image" src="{{item.image_url}}">
                             {% else %}
-                                <img class="item-image" src="static/tf2folio/images/questionmark.webp">
+                                <img class="item-image" src="{% static 'tf2folio/images/questionmark.webp' %}">
                             {% endif %}
                         </div>
                         <span class="{{item.quality}}">{{item.item_title}}</span>
@@ -79,12 +79,12 @@
                     <div class="item-box border-{{item.quality}}" data-item-id="{{item.id}}">
                         <div class='item-box-image'>
                             {% if item.particle_id %}
-                                <img class="particle-image" src="static/tf2folio/particles/{{item.particle_id}}_188x188.png">
+                                <img class="particle-image" src="{% static 'tf2folio/particles/'|add:item.particle_id|add:'_188x188.png' %}">
                             {% endif %}
                             {% if item.image_url %}
                                 <img class="item-image" src="{{item.image_url}}">
                             {% else %}
-                                <img class="item-image" src="static/tf2folio/images/questionmark.webp">
+                                <img class="item-image" src="{% static 'tf2folio/images/questionmark.webp' %}">
                             {% endif %}
                         </div>
                         <span class="{{item.quality}}">{{item.item_title}}</span>  
@@ -178,6 +178,7 @@
     </div> 
 {% endfor%}
 
+{% if all_trades.paginator.num_pages > 1 %}
     <nav aria-label="Page navigation all trades">
         <ul class="pagination justify-content-center">
         {% if all_trades.has_previous %}
@@ -200,7 +201,7 @@
         {% endif %}
         </ul>
     </nav>
-
+{% endif %}
 </div>
 
     
