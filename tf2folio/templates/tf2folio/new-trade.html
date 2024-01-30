@@ -6,8 +6,8 @@
         <h2 class="title">Register trade</h2>
         <div class="trade">
             <div class="transaction-titles">
-                <h4>Sold:</h4>
-                <h4>Recieved:</h4>
+                <h5>Sold</h5>
+                <h5>Recieved</h5>
             </div>
             <div class="trade-items-container">
                 <div id="selected-items" class="items-sold">
@@ -22,7 +22,7 @@
             <div class="item-selection">
                 <div class="items-sold-selection">
                     <div>
-                        <h5 class="title" id="sold-selection-title">Add sold item</h5>
+                        <h6 class="title" id="sold-selection-title">Add sold item</h6>
                         
                         {{sale_form.items_sold}}
                         <button type="button" class="btn btn-sm btn-outline-info add-item">Add Item</button>
@@ -30,7 +30,7 @@
                 </div>
                 <div class="items-recieved-selection">
                     <div>
-                        <h5 class="title">Add recieved item</h5>
+                        <h6 class="title">Add recieved item</h6>
                         {{sale_form.items_bought}}
                         <button type="button" class="btn btn-sm btn-outline-info add-item" id="add-recieved-item" >Add Item</button>
                     </div>

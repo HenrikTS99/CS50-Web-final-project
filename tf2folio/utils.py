@@ -7,6 +7,7 @@ from decimal import Decimal, ROUND_DOWN
 import time
 from django.http import JsonResponse
 import datetime
+from django.core.paginator import Paginator
 
 PARTICLE_EFFECTS_MAPPING = {
     '4': 'Community Sparkle',
@@ -495,7 +496,12 @@ USD_KEY_PRICES = {
 
 conversion_rates_cache = {}
 
+def paginate(posts, request):
+    p = Paginator(posts, 10)
+    page = request.GET.get('page')
+    return p.get_page(page)
 
+    
 def create_item_data(form):
     item = form.save(commit=False)
     title = create_title(item)
@@ -563,7 +569,7 @@ def create_image(Item):
             print('Failed to fetch the image', 404, search_name)
             print("Testing capitalized title.")
             search_name = search_name.title()
-    return 'https://scrap.tf/img/items/warpaint/Grenade%20Launcher_407_5_0.png' # 'https://wiki.teamfortress.com/w/images/thumb/c/c4/Unknownweapon.png/256px-Unknownweapon.png'
+    return None # 'https://wiki.teamfortress.com/w/images/thumb/c/c4/Unknownweapon.png/256px-Unknownweapon.png'
 
 
 def get_particle_id(particle_effect):

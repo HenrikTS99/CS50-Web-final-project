@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
     saleButton.addEventListener('click', () => {
         transaction_type = 'sale';
         toggleForm();
-        //sale_trade();
     });
 
     buyButton.addEventListener('click', () => {

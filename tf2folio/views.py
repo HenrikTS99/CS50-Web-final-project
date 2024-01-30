@@ -14,9 +14,11 @@ import json
 import requests
 from django.template.loader import render_to_string
 
+
 @login_required
 def index(request):
     items = Item.objects.filter(Q(sold=False) & Q(owner=request.user))
+
     sold_items = Item.objects.filter(Q(sold=True) & Q(owner=request.user))
     return render(request, "tf2folio/inventory.html", {
         "items": items, 'sold_items': sold_items
@@ -25,7 +27,14 @@ def index(request):
 
 @login_required
 def trade_history(request):
-    all_trades = Transaction.objects.filter(owner=request.user).order_by('-date')
+    source_trades = request.GET.get('source_trades', False)
+
+    if source_trades:
+        trades = Transaction.objects.filter(Q(owner=request.user) & Q(source_trade=True)).order_by('-date')
+    else:
+        trades = Transaction.objects.filter(owner=request.user).order_by('-date')
+
+    all_trades = utils.paginate(trades, request)
     return render(request, "tf2folio/trade-history.html", {
         "all_trades": all_trades
     })
