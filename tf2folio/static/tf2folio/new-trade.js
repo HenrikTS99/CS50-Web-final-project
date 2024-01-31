@@ -10,11 +10,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const tradeDisplaySection = document.querySelector('.trade-display-container');
     const selectedItemsContainer = document.getElementById('selected-items');
     const recievedItemsContainer = document.getElementById('recieved-items');
+    const transactionBox = document.getElementById('transaction-method-box');
     const itemsSoldDropdown = document.querySelector('#id_items_sold');
     const itemsBoughtDropdown = document.querySelector('#id_items_bought');
     const tradeSubmitButton = document.querySelector('#trade-submit-button');
     const transactionMethodRadioButtons = document.querySelectorAll('input[name="transaction_method"]');
     const transactionMethodRadioButtons2 = document.querySelectorAll('input[name="transaction_method-2"]');
+    const amountFields = document.querySelectorAll('.amount-field');
+    const currencyFields = document.querySelectorAll('.currency-field');
+    const boxSpan = document.querySelector('.pure-amount');
+    const currencyField = document.querySelector('.currency-field');
+    
     
 
     saleButton.addEventListener('click', () => {
@@ -54,6 +60,29 @@ document.addEventListener('DOMContentLoaded', function() {
             addItemToSelectedItems(event, 'bought')
         });
     });
+
+    amountFields.forEach(field => {
+        field.addEventListener('input', () => {
+            duplicateFieldValues(amountFields, field.value);
+            updateTransactionBox(field.value);
+        });
+    });
+
+    // Make sure the currency field is updated when the currency is changed
+    currencyFields.forEach(field => {
+        field.addEventListener('input', () => {
+            duplicateFieldValues(currencyFields, field.value);
+            updateTransactionBox(amountFields[0].value);
+        });
+    });
+
+    function duplicateFieldValues(fields, newValue) {
+        fields.forEach(field => {
+            if (field.value !== newValue) {
+                field.value = newValue;
+            }
+        });
+    }
 
     transactionMethodRadioButtons.forEach((radioButton, index) => {
         radioButton.addEventListener('change', () => {
@@ -143,7 +172,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function clearRecievedItems() {
         Array.from(recievedItemsContainer.children).forEach(item => {
+            if (item !== transactionBox) {
             removeItemFromSelection(item);
+            }
         });
     }
 
@@ -205,9 +236,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log("Data sent sucsessfully", data);
             // Append the new item to the page
 
-            itemsContainer = document.getElementById('selected-items');
+            itemsContainer = selectedItemsContainer;
             if (itemRegisterForm.classList.contains('recieved-item-form')) {
-                itemsContainer = document.getElementById('recieved-items');
+                itemsContainer = recievedItemsContainer;
                 itemRegisterForm.classList.remove('recieved-item-form');
             }
             itemsContainer.insertAdjacentHTML('beforeend', data.item_html);
@@ -231,8 +262,10 @@ document.addEventListener('DOMContentLoaded', function() {
             itemIds.push(itemId);
         });
         Array.from(recievedItemsContainer.children).forEach(item => {
-            let itemId = item.getAttribute('data-item-id');
-            itemRecievedIds.push(itemId);
+            if (item !== transactionBox) {
+                let itemId = item.getAttribute('data-item-id');
+                itemRecievedIds.push(itemId);
+            }
         });
 
         const formData = new FormData(event.target);
@@ -299,11 +332,20 @@ document.addEventListener('DOMContentLoaded', function() {
         errorElement.innerHTML = '';
     }
 
+    function updateTransactionBox(fieldValue) {
+        if (fieldValue !== '') {
+            boxSpan.textContent = fieldValue;
+            if (currencyField.value !== '') {
+                boxSpan.textContent += ` ${currencyField.value}`;
+            }
+        } else {
+            boxSpan.textContent = '0';
+        }
+    }
 
     function handleTransactionChange(transactionMethod) {
-        const amountFields = document.querySelectorAll('.amount-field');
         const amountLabels = document.querySelectorAll(".amount-label");
-        const currencyFields = document.querySelectorAll('.currency-field');
+        
         const currencyLabels = document.querySelectorAll('.currency-label');
         const defaultSCMCurrency = document.querySelector('#default-scm-currency').value;
         const defaultPaypalCurrency = document.querySelector('#default-paypal-currency').value;
@@ -317,10 +359,43 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        function setCurrencyDisplayAndValue(displayValue) {
+        function setTransactionBoxDisplay(transactionMethod, quality) {
+            if (transactionMethod == 'items') {
+                transactionBox.style.display = 'none';
+                return;
+            }
+            
+            transactionMethod = transactionMethod == 'scm_funds' ? 'scm funds' : transactionMethod;
+            const keyImage = 'https://steamcdn-a.akamaihd.net/apps/440/icons/key.be0a5e2cda3a039132c35b67319829d785e50352.png';
+            const scmImage = 'https://community.cloudflare.steamstatic.com/public/shared/images/responsive/share_steam_logo.png';
+            const paypalImage = 'https://developer.valvesoftware.com/w/images/thumb/f/f9/Smallcredits.png/300px-Smallcredits.png';
+            const itemBox = document.querySelector('.item-box');
+            const transactionSpan = document.querySelector('.transaction-method');
+            const itemImage = document.querySelector('.item-image');
+
+            transactionBox.style.display = 'flex';
+            itemImage.src = transactionMethod === 'keys' ? keyImage : transactionMethod === 'scm funds' ? scmImage : paypalImage;
+            updateClassList(itemBox, `border-${quality}`);
+            updateClassList(transactionSpan, quality);
+            transactionSpan.textContent = transactionMethod;    
+        }
+
+        function updateClassList(element, newClass) {
+            element.classList.remove(element.className.split(' ').pop());
+            element.classList.add(newClass);
+        }
+
+        function updateTransactionBoxCurrency(transactionMethod) {
+            boxSpan.textContent = boxSpan.textContent.split(' ')[0];
+            if (currencyField.value !== '' && transactionMethod !== 'keys') {
+                boxSpan.textContent += ` ${currencyField.value}`;
+            }
+        }
+
+        function hideCurrencyFieldsAndLabels() {
             currencyFields.forEach((field, index) => {
                 field.style.display = 'none';
-                currencyLabels[index].style.display = displayValue;
+                currencyLabels[index].style.display = 'none';
             });
         }
 
@@ -330,11 +405,14 @@ document.addEventListener('DOMContentLoaded', function() {
             currencyFields.forEach(field => {
                 field.value = defaultCurrency;
             });
+            setTransactionBoxDisplay(transactionMethod, 'normal');
         } else if (transactionMethod == 'keys') {
+            setTransactionBoxDisplay(transactionMethod, 'unique');
             setDisplayAndValue('block');
-            setCurrencyDisplayAndValue('none');
+            hideCurrencyFieldsAndLabels();
         
         } else if (transactionMethod == 'items') {
+            setTransactionBoxDisplay(transactionMethod);
             // If 'items' selected, default option 2 to 'keys'
             setDisplayAndValue('none');
             const keysRadioButton2 = [...transactionMethodRadioButtons2].find(radioButton2 => radioButton2.value == 'keys');
@@ -346,6 +424,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
+        updateTransactionBoxCurrency(transactionMethod);
     }
     // Start with the first transaction method dropdown
     handleTransactionChange('keys');
