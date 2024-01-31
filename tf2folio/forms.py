@@ -34,11 +34,11 @@ class ItemForm(ModelForm):
         widget=forms.TextInput(attrs={'class': 'item-input-field', 'placeholder': 'Item Name'}),
     )
     texture_name = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'item-input-field', 'placeholder': 'Texture Name'}),
+        widget=forms.TextInput(attrs={'class': 'item-input-field', 'placeholder': 'Texture Name', 'list': 'texture-names'}),
         required=False,
     )
     particle_effect = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'item-input-field', 'placeholder': 'Particle Effect'}),
+        widget=forms.TextInput(attrs={'class': 'item-input-field', 'placeholder': 'Particle Effect', 'list': 'particle-effects'}),
         required=False,
     )
     craftable = forms.BooleanField(

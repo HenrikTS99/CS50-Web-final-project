@@ -30,6 +30,11 @@
     
 
     {{item_form.texture_name}}
+    <datalist id="texture-names">
+        {% for texture in texture_names %}
+        <option value="{{ texture }}">
+        {% endfor %}
+    </datalist>
 
     <h5 class="title-form">Wear</h5>
 
@@ -43,6 +48,11 @@
     </div>
 
     {{item_form.particle_effect}}
+    <datalist id="particle-effects">
+        {% for effect in particle_effects %}
+        <option value="{{ effect }}">
+        {% endfor %}
+    </datalist>
 
     <h5 class="title-form">Killstreak</h5>
 
@@ -60,7 +70,7 @@
     <h5 class="title-form">Item Preview</h5>
 
     <div class="item-box-div">
-        <div class="item-box border-{{item.quality}}">
+        <div class="item-box" id="item-preview-box">
             <div class='item-box-image'>
                 <img class="particle-image" style="display: none;" src="">
                 <img id="item-image" class="item-image" style="display: none;" src="">

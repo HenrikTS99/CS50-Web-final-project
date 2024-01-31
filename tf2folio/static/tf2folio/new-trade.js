@@ -364,7 +364,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 transactionBox.style.display = 'none';
                 return;
             }
-            
             transactionMethod = transactionMethod == 'scm_funds' ? 'scm funds' : transactionMethod;
             const keyImage = 'https://steamcdn-a.akamaihd.net/apps/440/icons/key.be0a5e2cda3a039132c35b67319829d785e50352.png';
             const scmImage = 'https://community.cloudflare.steamstatic.com/public/shared/images/responsive/share_steam_logo.png';

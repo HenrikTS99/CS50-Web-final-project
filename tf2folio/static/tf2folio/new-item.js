@@ -13,12 +13,12 @@ function generateImage() {
             console.log(data);
             var itemImage = document.getElementById("item-image");
             var particleImage = document.querySelector(".particle-image");
-            var itemBox = document.querySelector(".item-box");
+            var itemBox = document.getElementById("item-preview-box");
             var selectedQuality = document.querySelector('.radio-option-quality input[type="radio"]:checked').value;
             var titleBox = document.getElementById("title-box");
             var itemInputImage = document.getElementById("image-link").value;
 
-            itemBox.classList.add(`border-${selectedQuality}`);
+            itemBox.className = (`item-box border-${selectedQuality}`);
             itemImage.style.display = 'block';
             if (itemInputImage) {
                 itemImage.src = itemInputImage;
@@ -34,7 +34,7 @@ function generateImage() {
             }
             if (data.item_title) {
                 titleBox.innerHTML = data.item_title;
-                titleBox.classList.add(selectedQuality);
+                titleBox.className = selectedQuality;
             } else {
                 titleBox.innerHTML = '';
             }

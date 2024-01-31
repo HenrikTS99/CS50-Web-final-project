@@ -122,7 +122,9 @@ def new_trade(request):
         "sale_form": TradeSaleForm(owner=request.user), "buy_form": TradeBuyForm(owner=request.user), 
         "item_form": ItemForm(),
         "value_form": TradeValueForm(),
-        "user": request.user
+        "user": request.user,
+        "particle_effects": list(utils.PARTICLE_EFFECTS_MAPPING.values()),
+        "texture_names": utils.TEXTURE_NAMES,
     })
 
 
