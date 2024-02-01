@@ -1,12 +1,12 @@
 {% load static %}
 
 <form id="item-register-form" class="item-form" action="{% url 'new_item' %}" method="POST">
-    <h2 class="title-form">Register Item</h2>
+    <h2 class="title">Register Item</h2>
     {% csrf_token %}
     
     {{item_form.item_name}}
 
-    <h5 class="title-form">Quality</h5>
+    <h6 class="title">Quality</h6>
 
     <div class="radio-select-div">
         {% for quality in item_form.fields.quality.choices %}
@@ -17,7 +17,7 @@
         {% endfor %}
     </div>
 
-    <h5 class="title-form">Filters</h5>
+    <h6 class="title">Filters</h6>
 
     <div class="checkbox-div">
         {{item_form.craftable}}
@@ -36,7 +36,7 @@
         {% endfor %}
     </datalist>
 
-    <h5 class="title-form">Wear</h5>
+    <h6 class="title">Wear</h6>
 
     <div class="radio-select-div">
         {% for wear in item_form.fields.wear.choices %}
@@ -54,7 +54,7 @@
         {% endfor %}
     </datalist>
 
-    <h5 class="title-form">Killstreak</h5>
+    <h6 class="title">Killstreak</h6>
 
     <div class="radio-select-div">
         {% for killstreak in item_form.fields.killstreak.choices %}
@@ -65,9 +65,7 @@
         {% endfor %}
     </div>
 
-    <!-- Add an image element -->
-
-    <h5 class="title-form">Item Preview</h5>
+    <h6 class="title">Item Preview</h6>
 
     <div class="item-box-div">
         <div class="item-box" id="item-preview-box">
@@ -78,11 +76,12 @@
             <span id="title-box"></span>
         </div>
     </div>
+    <div id="item-error-display" class="alert bg-danger" role="alert" style="display: none;">
 
-    <!-- Add an input field for the image link -->
+    </div>
+
     <input type="text" class="item-input-field" id="image-link" name="image_link" placeholder="Enter your own image URL">
 
-    <!-- Modify the Generate Image button to call a JavaScript function -->
     <button type="button" class="btn btn-info my-2" onclick="generateImage()">Generate Preview</button>
 
     <button type="submit" class="btn btn-primary">Register Item</button>

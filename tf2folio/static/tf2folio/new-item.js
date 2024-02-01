@@ -1,6 +1,6 @@
 function generateImage() {
     var formData = new FormData(document.getElementById("item-register-form"));
-
+    const itemErrorDisplay = document.getElementById("item-error-display");
     console.log(formData);
 
     fetch('/generate_image_url', {
@@ -11,12 +11,12 @@ function generateImage() {
     .then(data => {
         if (data.image_url) {
             console.log(data);
-            var itemImage = document.getElementById("item-image");
-            var particleImage = document.querySelector(".particle-image");
-            var itemBox = document.getElementById("item-preview-box");
-            var selectedQuality = document.querySelector('.radio-option-quality input[type="radio"]:checked').value;
-            var titleBox = document.getElementById("title-box");
-            var itemInputImage = document.getElementById("image-link").value;
+            const itemImage = document.getElementById("item-image");
+            const particleImage = document.querySelector(".particle-image");
+            const itemBox = document.getElementById("item-preview-box");
+            const selectedQuality = document.querySelector('.radio-option-quality input[type="radio"]:checked').value;
+            const titleBox = document.getElementById("title-box");
+            const itemInputImage = document.getElementById("image-link").value;
 
             itemBox.className = (`item-box border-${selectedQuality}`);
             itemImage.style.display = 'block';
@@ -39,7 +39,8 @@ function generateImage() {
                 titleBox.innerHTML = '';
             }
         } else {
-            alert('Failed to generate image. Please enter your own image link.');
+            itemErrorDisplay.innerHTML = 'Failed to generate image. Please enter your own image link.';
+            itemErrorDisplay.style.display = 'block';
         }
     });
 }
