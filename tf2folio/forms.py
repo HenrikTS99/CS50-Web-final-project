@@ -42,11 +42,11 @@ class ItemForm(ModelForm):
         required=False,
     )
     craftable = forms.BooleanField(
-        widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+        widget=forms.CheckboxInput(attrs={'class': 'checkbox-input no-display'}),
         required=False, initial=True,
     )
     australium = forms.BooleanField(
-        widget=forms.CheckboxInput(attrs={'class': 'checkbox-input'}),
+        widget=forms.CheckboxInput(attrs={'class': 'checkbox-input no-display'}),
         required=False,
     )
     image_link = forms.URLField(required=False)

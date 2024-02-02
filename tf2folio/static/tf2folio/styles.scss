@@ -63,6 +63,10 @@ a {
   margin-bottom: 2px;
 }
 
+.no-display {
+  display:none;  
+} 
+
 @media (max-width: 50em) {
   h2 {
     font-size: 1.25em;
@@ -143,9 +147,6 @@ body {
     @include label-styles;
   }
 
-  .checkbox-input {
-    display:none;  
-  } 
 
   .checkbox-input:checked + label[for="id_craftable"], 
   .checkbox-input:checked + label[for="id_australium"] {
@@ -325,8 +326,8 @@ input[type="number"] {
 input[type=number]::-webkit-inner-spin-button, 
 input[type=number]::-webkit-outer-spin-button { 
   -webkit-appearance: none;
+  appearance: none;
 }
-
 
 
 /* inventory */
@@ -463,7 +464,6 @@ input[type=number]::-webkit-outer-spin-button {
 
   .transaction-profit {
     padding: 7px 9px 0 9px;
-    
     font-family: map-get($tf2-font, family);
     color: map-get($tf2-font, color);
     background-color: green;
@@ -518,12 +518,68 @@ input[type=number]::-webkit-outer-spin-button {
     font-size: 11px;
     position: absolute;
     margin: 5px;
-    top: 0; /* adjust as needed */
-    right: 0; /* adjust as needed */
+    top: 0;
+    right: 0;
 
     @media (max-width: 50em) {
       font-size: 8px;
       margin: 1px 5px;
+    }
+  }
+
+  .trade-notes {
+    font-size: 14px;
+    margin: 2px 10px 0 10px;
+    background-color: black;
+    border-radius: 8px;
+    border: .1px solid white;
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.5s, padding 0.5s, border 0.5s;
+    clear: both;
+
+    span {
+      overflow:hidden;
+    }
+  }
+
+  .trade-notes.expanded {
+    grid-template-rows: 1fr;
+    padding: 8px;
+    border: 2px solid #1b2838;
+  }
+}
+
+/* trade notes toggle */
+
+.notes-toggle-div {
+  float: right;
+  margin: 4px 10px;
+
+  .notes-toggle:checked + .toggle-button {
+    background-color: white;
+    color: black;
+    box-shadow:1px 1px 4px 2px rgba(200,200,200, 0.5);
+  }
+
+  .toggle-button {
+    background-color: #ccc;
+    border: 2px solid lightgrey;
+    border-radius: 10px;
+    padding: 9px;
+    
+    display: inline-flex;
+    cursor: pointer;
+  
+    @media (max-width: 50em) {
+      padding: 6px;
+      border-radius: 8px;
+    }
+  
+    &:hover {
+      background-color: white;
+      border-color: white;
+      box-shadow:1px 1px 4px 2px rgba(200,200,200, 0.8);
     }
   }
 }

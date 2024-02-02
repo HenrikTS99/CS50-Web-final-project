@@ -15,3 +15,8 @@ function toggleSourceTradeDisplay() {
     window.location.href = newUrl.toString();
 }
 
+function toggleNotes(tradeId) {
+    const notes = document.getElementById(`trade-notes-${tradeId}`);
+    notes.classList.toggle('expanded');
+}
+
