@@ -197,7 +197,7 @@ def get_item_html(request, item_id):
 def register_trade(request):
     print(request.POST)
     # Get the items selected in the form
-    item_list, item_recieved_list, error_response, = utils.process_items(request)
+    item_list, item_received_list, error_response, = utils.process_items(request)
     if error_response:
         return error_response
     
@@ -208,18 +208,18 @@ def register_trade(request):
     if errorResponse:
         return errorResponse
 
-    trade = Transaction.create_trade(form, request.user, item_list, item_recieved_list)
+    trade = Transaction.create_trade(form, request.user, item_list, item_received_list)
 
     form_amount = valueForm.cleaned_data.get('amount')
     if form_amount is not None:
         value = Value.create_trade_value(valueForm, trade)
         trade.transaction_value = value
         trade.save()
-    trade.add_items(item_list, item_recieved_list) # Add the items to the many-to-many fields
+    trade.add_items(item_list, item_received_list) # Add the items to the many-to-many fields
    
     # If one item is sold only for pure, update the item's sale_price/value
     # TODO: handle if more than 1 item is sold for pure
-    if len(item_list) == 1 and not item_recieved_list and request.POST.get('transaction_type') == 'sale':
+    if len(item_list) == 1 and not item_received_list and request.POST.get('transaction_type') == 'sale':
         print("logging pure sale")
         utils.process_pure_sale(item_list[0], trade)
     

@@ -256,7 +256,7 @@ body {
   
 }
 
-.items-sold-selection, .items-recieved-selection {
+.items-sold-selection, .items-received-selection {
   margin-top:4px;
   display: block;
   width: 45%;
@@ -507,7 +507,7 @@ input[type=number]::-webkit-outer-spin-button {
         padding-top: 17px;
       }
     }
-    .items-sold, .items-recieved {
+    .items-sold, .items-received {
       display: flex;
       flex-wrap: wrap;
       width: 45%;

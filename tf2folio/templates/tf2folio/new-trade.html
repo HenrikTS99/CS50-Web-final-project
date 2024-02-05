@@ -8,14 +8,14 @@
         
             <div class="transaction-titles">
                 <h5>Sold</h5>
-                <h5>Recieved</h5>
+                <h5>Received</h5>
             </div>
 
             <div class="trade-items-container">
                 <div id="selected-items" class="items-sold">
                 </div>
                 <span class="trade-icon">⇄</span>
-                <div id="recieved-items" class="items-recieved">
+                <div id="received-items" class="items-received">
 
                     <div id="transaction-method-box" class="item-box border-unique">
                         <div class='item-box-image'>
@@ -34,10 +34,10 @@
                     {{sale_form.items_sold}}
                     <button type="button" class="btn btn-sm btn-outline-info add-item">Add Item</button>
                 </div>
-                <div class="items-recieved-selection">
-                    <h6 class="title">Add recieved item</h6>
+                <div class="items-received-selection">
+                    <h6 class="title">Add received item</h6>
                     {{sale_form.items_bought}}
-                    <button type="button" class="btn btn-sm btn-outline-info add-item" id="add-recieved-item" >Add Item</button>
+                    <button type="button" class="btn btn-sm btn-outline-info add-item" id="add-received-item" >Add Item</button>
                 </div>
             </div>
         </div>
@@ -49,7 +49,7 @@
         </div>
     </div>
 
-    
+
     <div id="trade-register" class="trade-register-div">
         <h5 class="title">Transaction Type</h5>
         <button class="btn btn-primary" id="sale">Sale</button>

@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const tradeRegisterSection = document.querySelector('#trade-register');
     const tradeDisplaySection = document.querySelector('.trade-display-container');
     const selectedItemsContainer = document.getElementById('selected-items');
-    const recievedItemsContainer = document.getElementById('recieved-items');
+    const receivedItemsContainer = document.getElementById('received-items');
     const transactionBox = document.getElementById('transaction-method-box');
     const itemsSoldDropdown = document.querySelector('#id_items_sold');
     const itemsBoughtDropdown = document.querySelector('#id_items_bought');
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     buyButton.addEventListener('click', () => {
         transaction_type = 'buy';
         toggleForm();
-        clearRecievedItems();
+        clearReceivedItems();
     });
 
     
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    recievedItemsContainer.addEventListener('dblclick', (event) => {
+    receivedItemsContainer.addEventListener('dblclick', (event) => {
         if (event.target.closest('.item-box')) {
             getTargetItem(event);
         }
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Append the new item to the page
             
             if (item_type == 'bought' && transaction_type == 'sale') {
-                recievedItemsContainer.insertAdjacentHTML('beforeend', data.item_html);
+                receivedItemsContainer.insertAdjacentHTML('beforeend', data.item_html);
                 let selectedIndex = itemsBoughtDropdown.selectedIndex;
                 itemsBoughtDropdown.remove(selectedIndex);
                 itemsSoldDropdown.remove(selectedIndex);
@@ -170,8 +170,8 @@ document.addEventListener('DOMContentLoaded', function() {
         removeItemFromSelection(itemElement);
     }
 
-    function clearRecievedItems() {
-        Array.from(recievedItemsContainer.children).forEach(item => {
+    function clearReceivedItems() {
+        Array.from(receivedItemsContainer.children).forEach(item => {
             removeItemFromSelection(item);
         });
     }
@@ -197,19 +197,19 @@ document.addEventListener('DOMContentLoaded', function() {
         buyButton.className = (transaction_type == 'buy') ? 'btn btn-primary' : 'btn btn-outline-primary';
         saleForm.style.display = (transaction_type == 'sale') ? 'block' : 'none';
         buyForm.style.display = (transaction_type == 'buy') ? 'block' : 'none';
-        // Change titles and hide recieved items selection
-        document.querySelector('.items-recieved-selection').style.display = (transaction_type == 'sale') ? 'block' : 'none';
+        // Change titles and hide received items selection
+        document.querySelector('.items-received-selection').style.display = (transaction_type == 'sale') ? 'block' : 'none';
         document.querySelector('#sold-selection-title').textContent = (transaction_type == 'sale') ? 'Add sold item' : 'Add bought item';
         transactionTitles[0].textContent = (transaction_type == 'sale') ? 'Sold' : 'Bought';
-        transactionTitles[1].textContent = (transaction_type == 'sale') ? 'Recieved' : 'Paid';
+        transactionTitles[1].textContent = (transaction_type == 'sale') ? 'Received' : 'Paid';
     }
 
     function register_item(button) {
         tradeDisplaySection.style.display = 'none';
         tradeRegisterSection.style.display = 'none';
         itemRegisterSection.style.display = 'block';
-        if (button.id == 'add-recieved-item') {
-            itemRegisterForm.className += ' recieved-item-form';
+        if (button.id == 'add-received-item') {
+            itemRegisterForm.className += ' received-item-form';
         }
     }
 
@@ -238,9 +238,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Append the new item to the page
 
             itemsContainer = selectedItemsContainer;
-            if (itemRegisterForm.classList.contains('recieved-item-form')) {
-                itemsContainer = recievedItemsContainer;
-                itemRegisterForm.classList.remove('recieved-item-form');
+            if (itemRegisterForm.classList.contains('received-item-form')) {
+                itemsContainer = receivedItemsContainer;
+                itemRegisterForm.classList.remove('received-item-form');
             }
             itemsContainer.insertAdjacentHTML('beforeend', data.item_html);
             clearErrors();
@@ -257,15 +257,15 @@ document.addEventListener('DOMContentLoaded', function() {
         // get selected items
         event.preventDefault();
         let itemIds = [];
-        itemRecievedIds = [];
+        itemReceivedIds = [];
         Array.from(selectedItemsContainer.children).forEach(item => {
             let itemId = item.getAttribute('data-item-id');
             itemIds.push(itemId);
         });
-        Array.from(recievedItemsContainer.children).forEach(item => {
+        Array.from(receivedItemsContainer.children).forEach(item => {
             if (item !== transactionBox) {
                 let itemId = item.getAttribute('data-item-id');
-                itemRecievedIds.push(itemId);
+                itemReceivedIds.push(itemId);
             }
         });
 
@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.delete('transaction_method-2');
         }
         formData.append('itemIds', JSON.stringify(itemIds));
-        formData.append('itemRecievedIds', JSON.stringify(itemRecievedIds));
+        formData.append('itemReceivedIds', JSON.stringify(itemReceivedIds));
         console.log(formData);
         formData.set('currency', formData.get('currency').toUpperCase());
         fetch('/register_trade', {

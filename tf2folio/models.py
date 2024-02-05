@@ -150,7 +150,7 @@ class Transaction(models.Model):
     #origin_trade = models.ForeginKey('Transaction', on_delete=models.SET_NULL, null=True, blank=True, related_name='child_trades')
 
     @classmethod
-    def create_trade(cls, form, user, item_list, item_recieved_list):
+    def create_trade(cls, form, user, item_list, item_received_list):
         trade = form.save(commit=False)
         trade.owner = user
         trade.date = timezone.now()
@@ -186,16 +186,16 @@ class Transaction(models.Model):
                     currency=self.currency, amount=self.amount)
             item.add_purchase_price(value)
             
-    def add_items(self, item_list, item_recieved_list):
+    def add_items(self, item_list, item_received_list):
         for item in item_list:
             self.add_item(item)
-        if self.transaction_type == "sale" and item_recieved_list:
-            for item in item_recieved_list:
+        if self.transaction_type == "sale" and item_received_list:
+            for item in item_received_list:
                 self.items_bought.add(item)
         self.save()
         self.check_if_source_trade()
     
-    def total_pure_recieved(self):
+    def total_pure_received(self):
         pass
 
     def __str__(self):

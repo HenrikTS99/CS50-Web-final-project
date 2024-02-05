@@ -50,7 +50,7 @@ function generateImage() {
         } else {
             itemErrorDisplay.innerHTML = 'Failed to generate image. Please enter your own image link.';
             itemErrorDisplay.style.display = 'block';
-            itemImage.src = imageUrl;
+            itemImage.src = defaultImage;
         }
     });
 }

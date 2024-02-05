@@ -594,18 +594,18 @@ def create_item_lists(item_ids):
 
 def process_items(request):
     item_ids = json.loads(request.POST['itemIds'])
-    item_recieved_ids = json.loads(request.POST['itemRecievedIds'])
+    item_received_ids = json.loads(request.POST['itemReceivedIds'])
 
     item_list = create_item_lists(item_ids)
     if item_list == []:
         return None, None, JsonResponse({"error": "No items selected."}, status=404)
 
-    item_recieved_list = create_item_lists(item_recieved_ids)
-    # item trades need items recieved
-    if item_recieved_list == [] and request.POST['transaction_method'] == "items":
-        return None, None, JsonResponse({"error": "No items recieved in item trade."}, status=404)
+    item_received_list = create_item_lists(item_received_ids)
+    # item trades need items received
+    if item_received_list == [] and request.POST['transaction_method'] == "items":
+        return None, None, JsonResponse({"error": "No items received in item trade."}, status=404)
     
-    return item_list, item_recieved_list, None
+    return item_list, item_received_list, None
 
 
 def validate_form(form):

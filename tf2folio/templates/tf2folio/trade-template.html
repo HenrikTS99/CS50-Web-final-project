@@ -5,7 +5,7 @@
     <div class ="transaction-titles">
         {% if trade.transaction_type == 'sale' %}
             <h5>Sold</h5>
-            <h5>Recieved</h5>
+            <h5>Received</h5>
         {% else %}
             <h5>Bought</h5>
             <h5>Paid</h5>
@@ -27,7 +27,7 @@
 
         <span class="trade-icon">⇄</span>
 
-        <div class="items-recieved">
+        <div class="items-received">
             {% if trade.transaction_type == 'sale' %}
                 {% for item in trade.items_bought.all %}
                     {% include 'tf2folio/item-template.html' with item=item %}
@@ -40,7 +40,7 @@
     {% if trade.source_trade %}
         <div class ="transaction-titles">
             <h6>Purchase price:</h6>
-            <h6>Total pure recieved:</h6>
+            <h6>Total pure received:</h6>
         </div>
         <hr>
         <div class ="transaction-titles">
