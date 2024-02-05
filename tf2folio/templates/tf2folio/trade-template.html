@@ -1,0 +1,78 @@
+{% load trade_history_filters %}
+
+<div class="trade" data-source-trade="{{trade.source_trade}}">
+
+    <div class ="transaction-titles">
+        {% if trade.transaction_type == 'sale' %}
+            <h5>Sold</h5>
+            <h5>Recieved</h5>
+        {% else %}
+            <h5>Bought</h5>
+            <h5>Paid</h5>
+        {% endif %}
+    </div>
+
+    <div class="trade-items-container">
+        <div class="items-sold">
+            {% if trade.transaction_type == 'sale' %}
+                {% for item in trade.items_sold.all %}
+                    {% include 'tf2folio/item-template.html' with item=item %}
+                {% endfor %}
+            {% else %}
+                {% for item in trade.items_bought.all %}
+                        {% include 'tf2folio/item-template.html' with item=item %}
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <span class="trade-icon">⇄</span>
+
+        <div class="items-recieved">
+            {% if trade.transaction_type == 'sale' %}
+                {% for item in trade.items_bought.all %}
+                    {% include 'tf2folio/item-template.html' with item=item %}
+                {% endfor %}
+            {% endif %}
+            {% include 'tf2folio/transaction-method-template.html' with trade=trade %}
+        </div>
+    </div>
+
+    {% if trade.source_trade %}
+        <div class ="transaction-titles">
+            <h6>Purchase price:</h6>
+            <h6>Total pure recieved:</h6>
+        </div>
+        <hr>
+        <div class ="transaction-titles">
+            {% for item in trade.items_sold.all %}
+                {% if item.purchase_price %}
+                    <h6>{{ item.purchase_price|value_display }}</h6>
+                {% endif %}
+                {% if item.sale_price %}
+                    <h6>{{ item.sale_price|value_display }}</h6>
+                {% endif %}
+        </div>
+                {% if item.profit_value %}
+                    <hr>
+                    <div class="transaction-profit">
+                        <h5>Profit: {{ item.profit_value|value_display }}</h5>
+                    </div>
+                {% endif %}
+            {% endfor %}
+    {% endif %}
+    
+    <!--Trade info-->
+    <span class="trade-date"> {{ trade.date|date:"F j, Y" }} </span>
+    {% if trade.description %}
+        <div class="notes-toggle-div">
+            <input type="checkbox" class="notes-toggle no-display" id="notes-toggle-{{trade.id}}" onclick="toggleNotes('{{trade.id}}')">
+            <label class="toggle-button" for="notes-toggle-{{trade.id}}">
+                <i class="fa-solid fa-note-sticky"></i>
+            </label>
+        </div> 
+        
+        <div id="trade-notes-{{trade.id}}" class="title trade-notes">
+            <span>{{ trade.description }}</span>
+        </div>
+    {% endif %}
+</div> 

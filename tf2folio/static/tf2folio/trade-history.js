@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const SourceTradesBool = urlParams.get('source_trades') === 'true';
-    document.querySelector('#show-source-trades-checkbox').checked = SourceTradesBool;
+    const checkBox = document.querySelector('#show-source-trades-checkbox');
+    checkBox.addEventListener('change', toggleSourceTradeDisplay);
+    setSourceTradeCheck() 
 });
 
 function toggleSourceTradeDisplay() {
@@ -20,3 +20,9 @@ function toggleNotes(tradeId) {
     notes.classList.toggle('expanded');
 }
 
+// Set the source trade checkbox to the correct state based on the URL
+function setSourceTradeCheck() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const SourceTradesBool = urlParams.get('source_trades') === 'true';
+    document.querySelector('#show-source-trades-checkbox').checked = SourceTradesBool;
+}

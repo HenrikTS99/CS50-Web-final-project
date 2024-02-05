@@ -7,7 +7,6 @@
     {{item_form.item_name}}
 
     <h6 class="title">Quality</h6>
-
     <div class="radio-select-div">
         {% for quality in item_form.fields.quality.choices %}
             <div class="radio-option-quality">
@@ -18,16 +17,12 @@
     </div>
 
     <h6 class="title">Filters</h6>
-
     <div class="checkbox-div">
         {{item_form.craftable}}
         <label for="{{ item_form.craftable.id_for_label }}">Craftable</label>
-        
         {{item_form.australium}}
         <label for="{{ item_form.australium.id_for_label }}">Australium</label>
     </div>
-
-    
 
     {{item_form.texture_name}}
     <datalist id="texture-names">
@@ -37,7 +32,6 @@
     </datalist>
 
     <h6 class="title">Wear</h6>
-
     <div class="radio-select-div">
         {% for wear in item_form.fields.wear.choices %}
             <div class="radio-option">
@@ -55,7 +49,6 @@
     </datalist>
 
     <h6 class="title">Killstreak</h6>
-
     <div class="radio-select-div">
         {% for killstreak in item_form.fields.killstreak.choices %}
             <div class="radio-option">
@@ -66,7 +59,6 @@
     </div>
 
     <h6 class="title">Item Preview</h6>
-
     <div class="item-box-div">
         <div class="item-box" id="item-preview-box">
             <div class='item-box-image'>
@@ -76,17 +68,19 @@
             <span id="title-box"></span>
         </div>
     </div>
-    <div id="item-error-display" class="alert bg-danger" role="alert" style="display: none;">
-
-    </div>
+    
+    
+    <div id="item-error-display" class="alert bg-danger" role="alert" style="display: none;"></div>
 
     <input type="text" class="item-input-field" id="image-link" name="image_link" placeholder="Enter your own image URL">
-
-    <button type="button" class="btn btn-info my-2" onclick="generateImage()">Generate Preview</button>
+    <button type="button" id="generate-img-btn" class="btn btn-info my-2">Generate Preview</button>
 
     <button type="submit" class="btn btn-primary">Register Item</button>
 </form>
 
 {% block script %}
+    <script>
+        var imageUrl = "{% static 'tf2folio/images/questionmark.webp' %}"; // Default image path
+    </script>
     <script src="{% static 'tf2folio/new-item.js' %}"></script>
 {% endblock %}

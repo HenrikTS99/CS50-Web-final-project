@@ -5,10 +5,12 @@
     <div class="trade-display-container">
         <h2 class="title">Register trade</h2>
         <div class="trade">
+        
             <div class="transaction-titles">
                 <h5>Sold</h5>
                 <h5>Recieved</h5>
             </div>
+
             <div class="trade-items-container">
                 <div id="selected-items" class="items-sold">
                 </div>
@@ -28,22 +30,18 @@
             <hr>
             <div class="item-selection">
                 <div class="items-sold-selection">
-                    <div>
-                        <h6 class="title" id="sold-selection-title">Add sold item</h6>
-                        
-                        {{sale_form.items_sold}}
-                        <button type="button" class="btn btn-sm btn-outline-info add-item">Add Item</button>
-                    </div>
+                    <h6 class="title" id="sold-selection-title">Add sold item</h6>
+                    {{sale_form.items_sold}}
+                    <button type="button" class="btn btn-sm btn-outline-info add-item">Add Item</button>
                 </div>
                 <div class="items-recieved-selection">
-                    <div>
-                        <h6 class="title">Add recieved item</h6>
-                        {{sale_form.items_bought}}
-                        <button type="button" class="btn btn-sm btn-outline-info add-item" id="add-recieved-item" >Add Item</button>
-                    </div>
+                    <h6 class="title">Add recieved item</h6>
+                    {{sale_form.items_bought}}
+                    <button type="button" class="btn btn-sm btn-outline-info add-item" id="add-recieved-item" >Add Item</button>
                 </div>
             </div>
         </div>
+
         <div id="trade-register-error" class="alert bg-danger" role="alert" style="display: none;">
             {% for error in form.errors %}
                 {{ error }}
@@ -52,83 +50,18 @@
     </div>
 
     
-
     <div id="trade-register" class="trade-register-div">
         <h5 class="title">Transaction Type</h5>
         <button class="btn btn-primary" id="sale">Sale</button>
         <button class="btn btn-outline-primary" id="buy">Purchase</button>
 
         <form class="trade-form" id="sale-form">
-            {% csrf_token %}
-
-            <label class="title" for="{{ value_form.transaction_method.id_for_label }}">Transaction Method:</label>
-            <div class="radio-select-div">
-                {% for method in value_form.fields.transaction_method.choices %}
-                    <div class="radio-option">
-                        <input type="radio" name="transaction_method" id="method-{{ method.0 }}" value="{{ method.0 }}" {% if forloop.first %}checked{% endif %}>
-                        <label for="method-{{ method.0 }}">{{ method.1 }}</label>
-                    </div>
-                {% endfor %}
-            </div>
-
-            <div class="trade-input-field">
-                <label for="{{ value_form.amount.id_for_label }}" class="amount-label title" >Amount:</label>
-                {{value_form.amount}}
-            </div>
-            
-            <div class="trade-input-field">
-                <label for="{{ value_form.currency.id_for_label }}" class="currency-label title">Currency:</label>
-                <input type="text" name="currency" class="currency-field" list="currencies" />
-                    <datalist id="currencies">
-                        {% for currency in value_form.fields.currency.choices %}
-                            <option value="{{ currency.0 }}">{{ currency.1 }}</option>
-                        {% endfor %}
-                    </datalist>
-            </div>
-                
-            {{sale_form.description}}
-            <button type="submit" form="sale-form" id="trade-submit-button" class="btn btn-primary">Register Sale</button>
-        
+            {% include 'tf2folio/trade-form.html' with form_type='sale_form' form=sale_form %}
         </form>
-
 
         <form class="trade-form" id="buy-form">
-            {% csrf_token %}
-            <div class="form-rows">
-
-                <label class="title" for="{{ value_form.transaction_method.id_for_label }}">Transaction Method:</label>
-                <div class="radio-select-div">
-                    {% for method in value_form.fields.transaction_method.choices|slice:":-1" %} <!-- Remove the last choice, which is "items" -->
-                        <div class="radio-option">
-                            <input type="radio" name="transaction_method-2" id="method-{{ method.0 }}" value="{{ method.0 }}" {% if forloop.first %}checked{% endif %}>
-                            <label for="method-{{ method.0 }}">{{ method.1 }}</label>
-                        </div>
-                    {% endfor %}
-                </div>
-
-                <div class="trade-input-field">
-                    <label for="{{ value_form.amount.id_for_label }}" class="amount-label title" >Amount:</label>
-                    {{value_form.amount}}
-                </div>
-
-                
-
-                <div class="trade-input-field">
-                    <label for="{{ value_form.currency.id_for_label }}" class="currency-label title">Currency:</label>
-                    <input type="text" name="currency" class="currency-field" list="currencies" />
-                        <datalist id="currencies">
-                            {% for currency in value_form.fields.currency.choices %}
-                                <option value="{{ currency.0 }}">{{ currency.1 }}</option>
-                            {% endfor %}
-                        </datalist>
-                </div>
-
-                {{buy_form.description}}
-                <button type="submit" form="buy-form" id="trade-submit-button" class="btn btn-primary">Register Purchase</button>
-            </div>
-            
+            {% include 'tf2folio/trade-form.html' with form_type='buy_form' form=buy_form %}
         </form>
-
     </div>
 
     <!-- User's default currencies -->

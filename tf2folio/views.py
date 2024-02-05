@@ -26,7 +26,7 @@ def index(request):
 
 
 @login_required
-def trade_history(request):
+def trade_history(request, page=1):
     source_trades = request.GET.get('source_trades', False)
 
     if source_trades:
@@ -34,7 +34,7 @@ def trade_history(request):
     else:
         trades = Transaction.objects.filter(owner=request.user).order_by('-date')
 
-    all_trades = utils.paginate(trades, request)
+    all_trades = utils.paginate(trades, request, page)
     return render(request, "tf2folio/trade-history.html", {
         "all_trades": all_trades
     })
@@ -46,7 +46,7 @@ def item_trade_history(request, item_id):
         Q(owner=request.user) & (Q(items_sold__id=item_id) | Q(items_bought__id=item_id))
     ).order_by('-date')
     return render(request, "tf2folio/trade-history.html", {
-        "all_trades": item_trades
+        "all_trades": item_trades,
     })
 
 
@@ -146,7 +146,7 @@ def register_item(request):
 
     item = Item.create_item(form, request.user, item_title, item_image, item_particle_id)
 
-    item_html = render_to_string('tf2folio/item-template.html', {'item': item })
+    item_html = render_to_string('tf2folio/item-template.html', {'item': item }) 
     response_data = {
         "message": "Data sent successfully.",
         "item_id": item.id,
@@ -183,7 +183,9 @@ def get_item_html(request, item_id):
         item = Item.objects.get(pk=item_id)
     except Item.DoesNotExist:
         return JsonResponse({"error": "Item not found."}, status=404)
-    item_html = render_to_string('tf2folio/item-template.html', {'item': item })
+    item_html = render_to_string('tf2folio/item-template.html', 
+        {'item': item, 'link_enabled': 'False' }) # Django template boolean values are strings
+        
     response_data = {
             "message": "Data sent successfully.",
             "item_html": item_html
@@ -221,6 +223,6 @@ def register_trade(request):
         print("logging pure sale")
         utils.process_pure_sale(item_list[0], trade)
     
-    response_data = utils.create_trade_response_data(trade)
+    response_data = utils.get_trade_history_redirect_response()
     return JsonResponse(response_data, status=201)
     

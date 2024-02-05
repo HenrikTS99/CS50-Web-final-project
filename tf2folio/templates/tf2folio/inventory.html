@@ -9,25 +9,7 @@
 
     <div class="item-boxes-container">
     {% for item in items %}
-        <a href="{% url 'item_trade_history' item.id %}"> 
-            <div class="item-box border-{{item.quality}}
-                {% if item.sale_price %}
-                    sold-color 
-                {% endif %}
-                " data-item-id="{{item.id}}">
-                <div class='item-box-image'>
-                    {% if item.particle_id %}
-                        <img class="particle-image" src="{% static 'tf2folio/particles/'|add:item.particle_id|add:'_188x188.png' %}">
-                    {% endif %}
-                    {% if item.image_url %}
-                        <img class="item-image" src="{{item.image_url}}">
-                    {% else %}
-                        <img class="item-image" src="{% static 'tf2folio/images/questionmark.webp' %}">
-                    {% endif %}
-                </div>
-                <span class="{{item.quality}}">{{item.item_title}}</span>
-            </div>
-        </a>
+        {% include 'tf2folio/item-template.html' with item=item %}
     {% empty %}
         <p class="title">No items in inventory</p>
     {% endfor %}
@@ -37,30 +19,11 @@
 
     <div class="item-boxes-container">
     {% for item in sold_items %}
-        <a href="{% url 'item_trade_history' item.id %}"> 
-            <div class="item-box border-{{item.quality}}
-                {% if item.sale_price %}
-                    sold-color 
-                {% endif %}
-                " data-item-id="{{item.id}}">
-                <div class='item-box-image'>
-                    {% if item.particle_id %}
-                        <img class="particle-image" src="{% static 'tf2folio/particles/'|add:item.particle_id|add:'_188x188.png' %}">
-                    {% endif %}
-                    {% if item.image_url %}
-                        <img class="item-image" src="{{item.image_url}}">
-                    {% else %}
-                        <img class="item-image" src="{% static 'tf2folio/images/questionmark.webp' %}">
-                    {% endif %}
-                </div>
-                <span class="{{item.quality}}">{{item.item_title}}</span>
-            </div>
-        </a>
+        {% include 'tf2folio/item-template.html' with item=item %}
     {% empty %}
         <p class="title">No items sold</p>
     {% endfor%}
     </div>
-
 </div>
     
 {% endblock %}

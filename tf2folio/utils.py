@@ -489,9 +489,8 @@ USD_KEY_PRICES = {
 
 conversion_rates_cache = {}
 
-def paginate(posts, request):
+def paginate(posts, request, page):
     p = Paginator(posts, 10)
-    page = request.GET.get('page')
     return p.get_page(page)
 
     
@@ -622,13 +621,9 @@ def validate_and_return_error(*forms):
             return errorResponse
     return None
 
-def create_trade_response_data(trade):
-    # TODO: transaction_html might not be used, consider removing from here, templates and new-trade.js in future
-    transaction_html = render_to_string('tf2folio/transaction-template.html', {'transaction': trade })
+def get_trade_history_redirect_response():
     return {
         "message": "Data sent successfully.",
-        "transaction_id": trade.id,
-        "transaction_html": transaction_html,
         "redirect_url": reverse("trade_history")
     }
 

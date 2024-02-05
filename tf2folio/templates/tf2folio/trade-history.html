@@ -1,212 +1,42 @@
 {% extends "tf2folio/layout.html" %}
 {% load static %}
-{% load trade_history_filters %}
 
 <title>{% block title %}Trade History{% endblock %}</title>
 {% block body %}
 
-<div class="checkbox-div">
-    <input type="checkbox" id="show-source-trades-checkbox" onclick="toggleSourceTradeDisplay()">
-    <label class="checkbox-label" for="show-source-trades-checkbox">Show only source trades</label>
-</div> 
-
 <div class="trade-display-container">
-    <h2 class="title">Trade History</h2>
+    <div class="trade-history-header">
+        <h2 class="title">Trade History</h2>
+        <div class="source-trades-checkbox-container">
+            <input type="checkbox" id="show-source-trades-checkbox">
+            <label class="checkbox-label" for="show-source-trades-checkbox">Show only source trades</label>
+        </div>
+    </div>
+
 {% for trade in all_trades %}
-    <div class="trade" data-source-trade="{{trade.source_trade}}">
-        <div class ="transaction-titles">
-            {% if trade.transaction_type == 'sale' %}
-                <h5>Sold</h5>
-                <h5>Recieved</h5>
-            {% else %}
-                <h5>Bought</h5>
-                <h5>Paid</h5>
-            {% endif %}
-        </div>
-        <div class="trade-items-container">
-        {% if trade.transaction_type == 'sale' %}
-            <div class="items-sold">
-            {% for item in trade.items_sold.all %}
-                <a href="{% url 'item_trade_history' item.id %}"> 
-                    <div class="item-box border-{{item.quality}}
-                        {% if item.sale_price %}
-                            sold-color 
-                        {% endif %}
-                        " data-item-id="{{item.id}}">
-                        <div class='item-box-image'>
-                            {% if item.particle_id %}
-                                <img class="particle-image" src="{% static 'tf2folio/particles/'|add:item.particle_id|add:'_188x188.png' %}">
-                            {% endif %}
-                            {% if item.image_url %}
-                                <img class="item-image" src="{{item.image_url}}">
-                            {% else %}
-                                <img class="item-image" src="{% static 'tf2folio/images/questionmark.webp' %}">
-                            {% endif %}
-                        </div>
-                        <span class="{{item.quality}}">{{item.item_title}}</span>
-                    </div>
-                </a>
-            {% endfor %}
-            </div>
-        {% else %}
-            <div class="items-sold">
-            {% for item in trade.items_bought.all %}
-                <a href="{% url 'item_trade_history' item.id %}">
-                    <div class="item-box border-{{item.quality}}" data-item-id="{{item.id}}">
-                        <div class='item-box-image'>
-                            {% if item.particle_id %}
-                                <img class="particle-image" src="{% static 'tf2folio/particles/'|add:item.particle_id|add:'_188x188.png' %}">
-                            {% endif %}
-                            {% if item.image_url %}
-                                <img class="item-image" src="{{item.image_url}}">
-                            {% else %}
-                                <img class="item-image" src="{% static 'tf2folio/images/questionmark.webp' %}">
-                            {% endif %}
-                        </div>
-                        <span class="{{item.quality}}">{{item.item_title}}</span>
-                    </div>
-                </a>
-            {% endfor %}
-            </div>
-        {% endif %}
-            <span class="trade-icon">⇄</span>
-
-
-        {% if trade.transaction_type == 'sale' %}
-            <div class="items-recieved">
-            {% for item in trade.items_bought.all %}
-                <a href="{% url 'item_trade_history' item.id %}">
-                    <div class="item-box border-{{item.quality}}" data-item-id="{{item.id}}">
-                        <div class='item-box-image'>
-                            {% if item.particle_id %}
-                                <img class="particle-image" src="{% static 'tf2folio/particles/'|add:item.particle_id|add:'_188x188.png' %}">
-                            {% endif %}
-                            {% if item.image_url %}
-                                <img class="item-image" src="{{item.image_url}}">
-                            {% else %}
-                                <img class="item-image" src="{% static 'tf2folio/images/questionmark.webp' %}">
-                            {% endif %}
-                        </div>
-                        <span class="{{item.quality}}">{{item.item_title}}</span>  
-                    </div>
-                </a>
-            {% endfor %}
-
-            {% if trade.transaction_method != None %}
-                {% with transaction=trade.transaction_method|get_transaction_info %}
-                    
-                        <div class="item-box border-{{ transaction.quality }}">
-                            <div class='item-box-image'>
-                                <img class="item-image" src="{{ transaction.image }}">
-                            </div>
-                            <span class="pure-amount">
-                                {{ trade.amount|floatformat:-2 }} 
-                                {% if trade.transaction_method != 'keys' %}
-                                    {{ trade.currency }}
-                                {% endif %}
-                            </span>
-                            <span class="{{ transaction.quality }}">{{ transaction.label }}</span>
-                        </div>
-                {% endwith %}
-            {% endif %}
-            </div>
-            
-        {% else %}
-            <div class="items-recieved">
-
-            {% if trade.transaction_method != None %}
-                {% with transaction=trade.transaction_method|get_transaction_info %}
-                    <div class="item-box border-{{ transaction.quality }}">
-                        <div class='item-box-image'>
-                            <img class="item-image" src="{{ transaction.image }}">
-                        </div>
-                        <span class="pure-amount">
-                            {{ trade.amount|floatformat:-2 }} 
-                            {% if trade.transaction_method != 'keys' %}
-                                {{ trade.currency }}
-                            {% endif %}
-                        </span>
-                        <span class="{{ transaction.quality }}">{{ transaction.label }}</span>
-                    </div>
-                {% endwith %}
-            {% endif %}
-
-            </div>
-        {% endif %}
-        </div>
-
-        {% if trade.source_trade %}
-            {% if trade.transaction_type == 'sale' %}
-                <div class ="transaction-titles">
-                        <h6>Purchase price:</h6>
-                        <h6>Total pure recieved:</h6>
-                </div>
-                <hr>
-                <div class ="transaction-titles">
-                    {% for item in trade.items_sold.all %}
-                        {% if item.purchase_price %}
-                            <h6>
-                                {{ item.purchase_price|value_display }}
-                            </h6>
-                        {% endif %}
-                    {% endfor %}
-                        {% for item in trade.items_sold.all %}
-                            {% if item.sale_price %}
-                                <h6>
-                                    {{ item.sale_price|value_display }}
-                                </h6>
-                            {% endif %}
-                        {% endfor %}
-                </div>
-            
-                {% for item in trade.items_sold.all %}
-                    {% if item.profit_value %}
-                        <hr>
-                        <div class="transaction-profit">
-                            <h5>Profit: {{ item.profit_value|value_display }}</h5>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            
-            {% endif %} 
-        {% endif %}
-
-        <span class="trade-date"> 
-            {{ trade.date|date:"F j, Y" }}
-        </span>
-        {% if trade.description %}
-        <div class="notes-toggle-div">
-            <input type="checkbox" class="notes-toggle no-display" id="notes-toggle-{{trade.id}}" onclick="toggleNotes('{{trade.id}}')">
-            <label class="toggle-button" for="notes-toggle-{{trade.id}}">
-                <i class="fa-solid fa-note-sticky"></i>
-            </label>
-        </div> 
-        
-        <div id="trade-notes-{{trade.id}}" class="title trade-notes">
-            <span>{{ trade.description }}</span>
-        </div>
-    
-        {% endif %}
-    </div> 
+    {% include 'tf2folio/trade-template.html' with trade=trade %}
+{% empty %}
+    <p class="title">No trades to display</p>
 {% endfor%}
 
+<!--Pagination-->
 {% if all_trades.paginator.num_pages > 1 %}
     <nav aria-label="Page navigation all trades">
         <ul class="pagination justify-content-center">
         {% if all_trades.has_previous %}
-            <li class="page-item"><a class="page-link" href="?page=1">First</a></li>
-            <li class="page-item"><a class="page-link" href="?page={{ all_trades.previous_page_number}}">Previous</a></li>
+            <li class="page-item"><a class="page-link" href="{% url 'trade_history' page=1 %}">First</a></li>
+            <li class="page-item"><a class="page-link" href="{% url 'trade_history' page=all_trades.previous_page_number %}">Previous</a></li>
         {% else %}
-            <li class="page-item disabled"><a class="page-link" href="?page=1">First</a></li>
-            <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+            <li class="page-item disabled"><a class="page-link" href="">First</a></li>
+            <li class="page-item disabled"><a class="page-link" href="">Previous</a></li>
 
         {% endif %}
         {% for page in all_trades.paginator.page_range %}
-            <li class="page-item {% if page == all_trades.number %}active {% endif %}"><a class="page-link" href="?page={{ page }}">{{page}}</a></li>
+            <li class="page-item {% if page == all_trades.number %} active {% endif %}"><a class="page-link" href="{% url 'trade_history' page=page %}">{{page}}</a></li>
         {% endfor %}
         {% if all_trades.has_next %}
-            <li class="page-item"><a class="page-link" href="?page={{ all_trades.next_page_number}}">Next</a></li>
-            <li class="page-item"><a class="page-link" href="?page={{ all_trades.paginator.num_pages }}">Last</a></li>
+            <li class="page-item"><a class="page-link" href="{% url 'trade_history' page=all_trades.next_page_number %}">Next</a></li>
+            <li class="page-item"><a class="page-link" href="{% url 'trade_history' page=all_trades.paginator.num_pages %}">Last</a></li>
         {% else %}
             <li class="page-item disabled"><a class="page-link" href="">Next</a></li>
             <li class="page-item disabled"><a class="page-link" href="">Last</a></li>

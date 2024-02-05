@@ -1,0 +1,41 @@
+{% csrf_token %}
+<label class="title" for="{{ value_form.transaction_method.id_for_label }}">Transaction Method:</label>
+<div class="radio-select-div">
+    {% if form_type == 'sale_form' %}
+        {% for method in value_form.fields.transaction_method.choices %}
+            <div class="radio-option">
+                <input type="radio" name="transaction_method" id="method-{{ method.0 }}" value="{{ method.0 }}" {% if forloop.first %}checked{% endif %}>
+                <label for="method-{{ method.0 }}">{{ method.1 }}</label>
+            </div>
+        {% endfor %}
+    {% else %}
+        {% for method in value_form.fields.transaction_method.choices|slice:":-1" %}
+            <div class="radio-option">
+                <input type="radio" name="transaction_method-2" id="method-{{ method.0 }}" value="{{ method.0 }}" {% if forloop.first %}checked{% endif %}>
+                <label for="method-{{ method.0 }}">{{ method.1 }}</label>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<div class="trade-input-field">
+    <label for="{{ value_form.amount.id_for_label }}" class="amount-label title" >Amount:</label>
+    {{value_form.amount}}
+</div>
+
+<div class="trade-input-field">
+    <label for="{{ value_form.currency.id_for_label }}" class="currency-label title">Currency:</label>
+    <input type="text" name="currency" class="currency-field" list="currencies" />
+        <datalist id="currencies">
+            {% for currency in value_form.fields.currency.choices %}
+                <option value="{{ currency.0 }}">{{ currency.1 }}</option>
+            {% endfor %}
+        </datalist>
+</div>
+
+{{form.description}}
+{% if form_type == 'buy_form' %}
+    <button type="submit" form="buy-form" id="trade-submit-button" class="btn btn-primary">Register Purchase</button>
+{% else %}
+    <button type="submit" form="sale-form" id="trade-submit-button" class="btn btn-primary">Register Sale</button>
+{% endif %}

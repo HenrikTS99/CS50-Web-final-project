@@ -137,6 +137,10 @@ body {
   width: 100%;
 }
 
+.pointer {
+  cursor: pointer;
+}
+
 /* Item register form */
 .checkbox-div {
   display: flex;
@@ -147,12 +151,21 @@ body {
     @include label-styles;
   }
 
-
   .checkbox-input:checked + label[for="id_craftable"], 
   .checkbox-input:checked + label[for="id_australium"] {
       background-color: white;
       color: black;
       box-shadow:1px 1px 4px 2px rgba(200,200,200, 0.5);
+  }
+}
+
+@media (max-width: 50em) {
+  .checkbox-div {
+    label {
+      font-size: 12px;
+      padding: 3px;
+      margin: 2px;
+    }
   }
 }
 
@@ -220,6 +233,16 @@ body {
   }
 }
 
+@media (max-width: 50em) {
+  .radio-select-div {
+    label {
+      font-size: 12px;
+      padding: 4px;
+      margin: 2px;
+    }
+  }
+}
+
 /* item preview box */
 .item-box-div {
   display: flex;
@@ -235,11 +258,11 @@ body {
 
 .items-sold-selection, .items-recieved-selection {
   margin-top:4px;
-  display: flex;
+  display: block;
   width: 45%;
   justify-content: center;
 
-  div, div * {
+  * {
     width: 100%;
   }
 
@@ -368,6 +391,7 @@ input[type=number]::-webkit-outer-spin-button {
   width: 120px;
   height: 130px;
   
+  
   overflow: hidden;
   position: relative;
 
@@ -425,15 +449,6 @@ input[type=number]::-webkit-outer-spin-button {
 
 
 /* trade display */
-
-.trade-display-container {
-  background-color: #1b2838;
-  padding-top: 20px;
-  display: grid;
-  grid-template-columns: 1fr;
-  justify-content: center;
-  
-}
 
 .trade {
   background-color: $highlight-background;
@@ -586,22 +601,75 @@ input[type=number]::-webkit-outer-spin-button {
 
 /* trade history */
 
-.checkbox-label {
-  font-family: map-get($tf2-font, family);
-  color: map-get($tf2-font, color);
-  user-select: none;
-  cursor: pointer;
+.trade-display-container {
+  background-color: #1b2838;
+  padding-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-content: center;
+
+  .trade-history-header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 1420px;
+    margin: auto;
+    width: 100%;
+
+    h2 {
+      position: absolute;
+    }
+  }
 }
 
-#show-source-trades-checkbox {
-  position: relative;
-  width:20px;
-  height: 20px;
-  background-color: blue;
-  border-radius: 5px;
-  border: 2px solid black;
-  cursor: pointer;
-  margin: 2px 5px 0 0;
+@media (max-width: 36em) {
+  .trade-history-header {
+    display: block !important;
+
+    h2 {
+      position: static !important;
+    }
+    div {
+      justify-content: center;
+    }
+  }
+}
+
+.source-trades-checkbox-container {
+  width: 100%;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  .checkbox-label {
+    font-family: map-get($tf2-font, family);
+    color: map-get($tf2-font, color);
+    user-select: none;
+    cursor: pointer;
+    margin-bottom: 0;
+  }
+
+  #show-source-trades-checkbox {
+    position: relative;
+    width:20px;
+    height: 20px;
+    cursor: pointer;
+    margin-right: 4px;
+  }
+}
+
+@media (max-width: 50em) {
+  .source-trades-checkbox-container {
+    .checkbox-label {
+      font-size: 12px;
+    }
+    #show-source-trades-checkbox {
+      width:15px;
+      height: 15px;
+    }
+  }
 }
 
 .sold-color {

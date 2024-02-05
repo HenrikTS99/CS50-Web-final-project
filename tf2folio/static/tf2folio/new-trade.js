@@ -172,13 +172,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function clearRecievedItems() {
         Array.from(recievedItemsContainer.children).forEach(item => {
-            if (item !== transactionBox) {
             removeItemFromSelection(item);
-            }
         });
     }
 
     function removeItemFromSelection(itemElement) {
+        if (itemElement === transactionBox) {
+            return;
+        }
         let itemId = itemElement.getAttribute('data-item-id');
         selectedItems.delete(itemId);
         itemElement.remove();
@@ -292,8 +293,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(data => {
-            console.log("Data sent sucsessfully", data);
-            tradeRegisterSection.insertAdjacentHTML('afterbegin', data.transaction_html);
+            console.log(data.message);
             window.location.href = data.redirect_url;
         })
         .catch(errors => {
