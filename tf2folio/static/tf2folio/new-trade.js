@@ -191,7 +191,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-
     function toggleForm() {
         saleButton.className = (transaction_type == 'sale') ? 'btn btn-primary' : 'btn btn-outline-primary';
         buyButton.className = (transaction_type == 'buy') ? 'btn btn-primary' : 'btn btn-outline-primary';

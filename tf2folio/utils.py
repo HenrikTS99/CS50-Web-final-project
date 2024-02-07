@@ -8,6 +8,7 @@ import time
 from django.http import JsonResponse
 import datetime
 from django.core.paginator import Paginator
+from .forms import TransactionForm, TradeValueForm
 
 PARTICLE_EFFECTS_MAPPING = {
     "4": "Community Sparkle",
@@ -591,7 +592,7 @@ def create_item_lists(item_ids):
             return JsonResponse({"error": "Item not found."}, status=404)
     return item_list
 
-
+# First two return values are the item lists, third return value is the error response
 def process_items(request):
     item_ids = json.loads(request.POST['itemIds'])
     item_received_ids = json.loads(request.POST['itemReceivedIds'])
@@ -601,11 +602,28 @@ def process_items(request):
         return None, None, JsonResponse({"error": "No items selected."}, status=404)
 
     item_received_list = create_item_lists(item_received_ids)
-    # item trades need items received
+    # item transaction trades need items received
     if item_received_list == [] and request.POST['transaction_method'] == "items":
         return None, None, JsonResponse({"error": "No items received in item trade."}, status=404)
     
     return item_list, item_received_list, None
+
+def validate_items(response, item_list, item_received_list):
+    transaction_type = response.POST['transaction_type']
+
+    for item in item_list:
+        if transaction_type == "buy":
+            trade_with_item_recieved = Transaction.objects.filter(items_bought=item)
+            if trade_with_item_recieved:
+                return JsonResponse({"error": f"You have already bought this item in another trade: {item}"}, status=400)
+
+        if transaction_type == "buy" and item.purchase_price:
+            return JsonResponse({"error": f"You have already bought this item: {item}"}, status=400)
+    
+    for item in item_received_list:
+        trade_with_item_recieved = Transaction.objects.filter(items_bought=item)
+        if trade_with_item_recieved:
+            return JsonResponse({"error": f"You have already recieved this item in another trade: {item}"}, status=400)
 
 
 def validate_form(form):
@@ -614,12 +632,16 @@ def validate_form(form):
         return JsonResponse({"errors": form.errors}, status=400)
     return None
 
-def validate_and_return_error(*forms):
+def get_and_validate_forms(request):
+    forms = []
+    forms.append(TransactionForm(request.POST))
+    forms.append(TradeValueForm(request.POST))
+
     for form in forms:
         errorResponse = validate_form(form)
         if errorResponse:
-            return errorResponse
-    return None
+            return None, None, errorResponse
+    return forms[0], forms[1], None
 
 def get_trade_history_redirect_response():
     return {

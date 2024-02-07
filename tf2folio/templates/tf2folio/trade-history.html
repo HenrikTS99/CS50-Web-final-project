@@ -16,7 +16,9 @@
 {% for trade in all_trades %}
     {% include 'tf2folio/trade-template.html' with trade=trade %}
 {% empty %}
-    <p class="title">No trades to display</p>
+    <div class="display-box">
+        <p class="title">No trades to display</p>
+    </div>
 {% endfor%}
 
 <!--Pagination-->

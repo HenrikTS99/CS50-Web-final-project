@@ -15,6 +15,7 @@
     {% endfor %}
     </div>
 
+{% if items %}
     <h2 class="title">Items Sold</h2>
 
     <div class="item-boxes-container">
@@ -24,6 +25,7 @@
         <p class="title">No items sold</p>
     {% endfor%}
     </div>
+{% endif %}
 </div>
     
 {% endblock %}

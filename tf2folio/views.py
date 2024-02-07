@@ -132,7 +132,6 @@ def new_trade(request):
 @login_required
 def register_item(request):
     form = ItemForm(request.POST)
-    print(form)
     errorResponse = utils.validate_form(form)
     if errorResponse:
         return errorResponse
@@ -146,7 +145,8 @@ def register_item(request):
 
     item = Item.create_item(form, request.user, item_title, item_image, item_particle_id)
 
-    item_html = render_to_string('tf2folio/item-template.html', {'item': item }) 
+    item_html = render_to_string('tf2folio/item-template.html', 
+        {'item': item, 'link_enabled': 'False'}) # Django template boolean values are strings
     response_data = {
         "message": "Data sent successfully.",
         "item_id": item.id,
@@ -196,22 +196,25 @@ def get_item_html(request, item_id):
 @require_POST
 def register_trade(request):
     print(request.POST)
+    transaction_method = request.POST.get('transaction_method')
+
     # Get the items selected in the form
     item_list, item_received_list, error_response, = utils.process_items(request)
     if error_response:
         return error_response
+
+    error_response = utils.validate_items(request, item_list, item_received_list)
+    if error_response:
+        return error_response
     
-    form = TransactionForm(request.POST)
-    valueForm = TradeValueForm(request.POST)
-    
-    errorResponse = utils.validate_and_return_error(form, valueForm)
+    form, valueForm, errorResponse = utils.get_and_validate_forms(request)
     if errorResponse:
         return errorResponse
 
     trade = Transaction.create_trade(form, request.user, item_list, item_received_list)
 
     form_amount = valueForm.cleaned_data.get('amount')
-    if form_amount is not None:
+    if form_amount is not None and transaction_method != 'items':
         value = Value.create_trade_value(valueForm, trade)
         trade.transaction_value = value
         trade.save()
