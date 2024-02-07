@@ -2,6 +2,8 @@
 
 <div class="trade" data-source-trade="{{trade.source_trade}}">
 
+    <span class="trade-date"> {{ trade.date|date:"F j, Y" }} </span>
+
     <div class ="transaction-titles">
         {% if trade.transaction_type == 'sale' %}
             <h5>Sold</h5>
@@ -52,27 +54,35 @@
                     <h6>{{ item.sale_price|value_display }}</h6>
                 {% endif %}
         </div>
+        <hr>
+        <!-- Container for profit and notes toggle -->
+        <div class="trade-info"> 
                 {% if item.profit_value %}
-                    <hr>
-                    <div class="transaction-profit">
-                        <h5>Profit: {{ item.profit_value|value_display }}</h5>
-                    </div>
+                        <div class="transaction-profit">
+                            <h5>Profit: {{ item.profit_value|value_display }}</h5>
+                        </div>
                 {% endif %}
             {% endfor %}
+    {% else %}
+        <!-- Container for profit and notes toggle -->
+        <div class="trade-info"> 
     {% endif %}
     
-    <!--Trade info-->
-    <span class="trade-date"> {{ trade.date|date:"F j, Y" }} </span>
     {% if trade.description %}
-        <div class="notes-toggle-div">
-            <input type="checkbox" class="notes-toggle no-display" id="notes-toggle-{{trade.id}}" onclick="toggleNotes('{{trade.id}}')">
-            <label class="toggle-button" for="notes-toggle-{{trade.id}}">
-                <i class="fa-solid fa-note-sticky"></i>
-            </label>
+            <div class="notes-toggle-div">
+                <input type="checkbox" class="notes-toggle no-display" id="notes-toggle-{{trade.id}}" data-trade-id="{{trade.id}}">
+                <label class="toggle-button" for="notes-toggle-{{trade.id}}">
+                    <i class="fa-solid fa-note-sticky"></i>
+                </label>
+            </div>
+        <!-- Close trade-info div-->
         </div> 
-        
-        <div id="trade-notes-{{trade.id}}" class="title trade-notes">
+
+        <div id="trade-notes-{{trade.id}}" data-trade-id="{{trade.id}}" class="title trade-notes">
             <span>{{ trade.description }}</span>
         </div>
+    {% else %}
+        <!-- Close trade-info div-->
+        </div> 
     {% endif %}
 </div> 
