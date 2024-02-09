@@ -25,7 +25,7 @@ CURRENCY_CHOICES = [
 class User(AbstractUser):
     items = models.ManyToManyField('Item', blank=True, related_name="item_owner")
     transactions = models.ManyToManyField('Transaction', blank=True, related_name="transaction_owner")
-    default_scm_currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='NOK', null=True, blank=True)
+    default_scm_currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='EUR', null=True, blank=True)
     default_paypal_currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='USD', null=True, blank=True)
 
 class Item(models.Model):

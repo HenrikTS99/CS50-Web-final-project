@@ -132,6 +132,7 @@ class ProfitCalculationTest(TestCase):
         
         utils.process_pure_sale(self.item3, self.transaction3)
 
+        # Database needs to be updated to acsess the new values
         self.item1.refresh_from_db()
         self.item2.refresh_from_db()
         self.item3.refresh_from_db()

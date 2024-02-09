@@ -56,8 +56,8 @@ class ItemForm(ModelForm):
         fields = ("item_name", "quality", "craftable", "australium", "texture_name",
             "wear", "particle_effect", "description", "killstreak")
 
-
-class BaseValueForm(forms.ModelForm):
+      
+class TradeValueForm(forms.ModelForm):
     transaction_method = forms.ChoiceField(
             choices=SELL_METHOD_CHOICES,
             widget=forms.RadioSelect,
@@ -71,38 +71,15 @@ class BaseValueForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        currency = cleaned_data.get("currency")
         transaction_method = cleaned_data.get("transaction_method")
+        currency = cleaned_data.get("currency")
+        amount = cleaned_data.get("amount")
 
         if currency and not currency.isupper():
             cleaned_data["currency"] = currency.upper()
 
         if transaction_method in [TRANSACTION_METHOD_SCM_FUNDS, TRANSACTION_METHOD_PAYPAL] and not currency:
             raise ValidationError({'currency': "Currency is required when transaction method is Steam Wallet Funds or PayPal."})
-
-        return cleaned_data
-
-
-class ItemValueForm(BaseValueForm):
-    # Exclude items from transaction method choices for item value form
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['transaction_method'].choices = [
-            choice for choice in self.fields['transaction_method'].choices if choice[0] != TRANSACTION_METHOD_ITEMS
-        ]
-        
-        
-class TradeValueForm(BaseValueForm):
-    class Meta:
-        model = Value
-        fields = ['transaction_method', 'currency', 'amount']
-        widgets = TRANSACTION_WIDGETS
-
-    def clean(self):
-        cleaned_data = super().clean()
-        transaction_method = cleaned_data.get("transaction_method")
-        currency = cleaned_data.get("currency")
-        amount = cleaned_data.get("amount")
 
         if transaction_method != TRANSACTION_METHOD_ITEMS and not amount:
             raise ValidationError({'amount': "Amount is required. If it's a item's only transaction, please select 'TF2 Items' as the transaction method."})
