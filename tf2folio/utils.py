@@ -727,7 +727,7 @@ def convert_sale_values_to_keys(value_objects):
                     print ('Error converting currency, skipping this value object')
                     continue
                 value_object.amount = converted_amount
-            key_amount += get_key_price(value_object.amount, value_object.transaction_method)
+            key_amount += get_key_price(value_object)
     return key_amount
 
 
@@ -751,11 +751,39 @@ def convert_currency(amount, from_currency, to_currency='USD'):
     return None
 
 
-def get_key_price(amount_usd, transaction_method):
-    key_price = Decimal(amount_usd)/Decimal(USD_KEY_PRICES[transaction_method])
+def get_current_key_sell_order():
+    try:
+        url = 'https://steamcommunity.com/market/itemordershistogram?country=US&language=english&currency=1&item_nameid=1'
+        response = requests.get(url)
+        data = response.json()
+        print(data)
+        print(data['sell_order_graph'])
+    except requests.exceptions.RequestException as error:
+        print('Error:', error)
+    
+    return None
+
+
+def get_key_price(value):
+    amount_usd = value.amount
+    transaction_method = value.transaction_method
+    user = find_user_from_value(value)
+    key_price = Decimal(amount_usd)/Decimal(get_usd_key_prices(transaction_method, user))
     key_price =  key_price.quantize(Decimal('.00'), rounding=ROUND_DOWN)
     #print(f'key_price: {key_price} from {amount_usd} USD')
     return key_price
+
+def find_user_from_value(value):
+    if value.transaction:
+        return value.transaction.owner
+    elif value.item:
+        return value.item.owner
+
+def get_usd_key_prices(transaction_method, user):
+    if transaction_method == 'scm_funds':
+        return user.market_settings.scm_key_price_dollars
+    elif transaction_method == 'paypal':
+        return user.market_settings.paypal_key_price_dollars
 
 
 def add_sale_price_and_check_profit(item, value):
@@ -817,7 +845,7 @@ def convert_value_method_to_keys(value):
                 print ('Error converting currency, skipping this value object')
                 return None
             value.amount = converted_amount
-        key_price = get_key_price(value.amount, value.transaction_method)
+        key_price = get_key_price(value)
         value.amount = key_price
         value.transaction_method = 'keys'
         value.currency = None

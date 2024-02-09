@@ -29,4 +29,7 @@ def get_transaction_info(key):
 def value_display(value):
     currency = value.currency if value.currency else ""
     amount = str(value.amount).rstrip('0').rstrip('.') if '.' in str(value.amount) else value.amount
-    return f'{amount} {currency} {value.get_transaction_method_display()}'
+    transaction_method = value.get_transaction_method_display()
+    if transaction_method == 'Keys' and amount == '1':
+        transaction_method = 'Key'
+    return f'{amount} {currency} {transaction_method}'

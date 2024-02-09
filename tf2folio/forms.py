@@ -1,5 +1,5 @@
 from django.forms import ModelForm, inlineformset_factory
-from .models import Item, Transaction, Value, SELL_METHOD_CHOICES
+from .models import Item, Transaction, Value, UserMarketSettings, SELL_METHOD_CHOICES
 from django import forms
 from django.core.exceptions import ValidationError
 
@@ -56,7 +56,16 @@ class ItemForm(ModelForm):
         fields = ("item_name", "quality", "craftable", "australium", "texture_name",
             "wear", "particle_effect", "description", "killstreak")
 
-      
+
+class CurrencySettingsForm(forms.ModelForm):
+    class Meta:
+        model = UserMarketSettings
+        fields = ['default_scm_currency', 'default_paypal_currency', 'scm_key_price_dollars', 'paypal_key_price_dollars']
+        widgets = {
+            'default_scm_currency': forms.Select(attrs={'class': 'currency-field'}),
+            'default_paypal_currency': forms.Select(attrs={'class': 'currency-field'}),
+        }
+
 class TradeValueForm(forms.ModelForm):
     transaction_method = forms.ChoiceField(
             choices=SELL_METHOD_CHOICES,

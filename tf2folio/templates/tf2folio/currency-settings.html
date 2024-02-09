@@ -1,0 +1,57 @@
+{% extends "tf2folio/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+<form id="settings-form" class="item-form" action="{% url 'currency_settings' %}" method="POST">
+    
+    {% csrf_token %}
+    <h3 class="title">Market Settings</h3>
+    {% if settings_form.errors %}
+        <div id="trade-register-error" class="alert bg-danger" role="alert">
+            {% for field, errors in settings_form.errors.items %}
+                {% for error in errors %}
+                    <p>{{ field }}: {{ error }}</p>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="trade-input-field">
+        <label for="{{ settings_form.default_scm_currency.id_for_label }}" class="currency-label title">Default SCM Currency:</label>
+        <input type="text" name="{{ settings_form.default_scm_currency.name }}" value="{{ settings_form.default_scm_currency.value }}" class="currency-field" list="currencies" />
+            <datalist id="currencies">
+                {% for currency in settings_form.fields.default_scm_currency.choices %}
+                    <option value="{{ currency.0 }}">{{ currency.1 }}</option>
+                {% endfor %}
+            </datalist>
+    </div>
+
+    {% if form.default_paypal_currency.errors %}
+        <div class="error">{{ form.default_paypal_currency.errors }}</div>
+    {% endif %}
+
+    <div class="trade-input-field">
+        <label for="{{ settings_form.default_paypal_currency.id_for_label }}" class="currency-label title">Default Paypal Currency:</label>
+        <input type="text" name="{{ settings_form.default_paypal_currency.name }}" value="{{ settings_form.default_paypal_currency.value }}" class="currency-field" list="currencies" />
+            <datalist id="currencies">
+                {% for currency in settings_form.fields.default_paypal_currency.choices %}
+                    <option value="{{ currency.0 }}">{{ currency.1 }}</option>
+                {% endfor %}
+            </datalist>
+    </div>
+
+    <div class="trade-input-field">
+        <label for="{{ settings_form.scm_key_price_dollars.id_for_label }}" class="amount-label title" ><a href="https://steamcommunity.com/market/listings/440/Mann%20Co.%20Supply%20Crate%20Key" target="_blank">SCM Key price (USD):</a></label>
+        {{settings_form.scm_key_price_dollars}}
+    </div>
+
+    <div class="trade-input-field">
+        <label for="{{ settings_form.paypal_key_price_dollars.id_for_label }}" class="amount-label title" ><a href="https://marketplace.tf/items/tf2/5021;6" target="_blank">Paypal Key price (USD):</a></label>
+        {{settings_form.paypal_key_price_dollars}}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Settings</button>
+</form>
+
+{% endblock %}

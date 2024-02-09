@@ -65,8 +65,8 @@
     </div>
 
     <!-- User's default currencies -->
-    <input type="hidden" id="default-scm-currency" value="{{ user.default_scm_currency }}">
-    <input type="hidden" id="default-paypal-currency" value="{{ user.default_paypal_currency }}">
+    <input type="hidden" id="default-scm-currency" value="{{ user.market_settings.default_scm_currency }}">
+    <input type="hidden" id="default-paypal-currency" value="{{ user.market_settings.default_paypal_currency }}">
 
     <div id="item-register">
         {% include 'tf2folio/new-item.html' %}

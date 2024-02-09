@@ -16,4 +16,5 @@ urlpatterns = [
     path("trade_history", views.trade_history, name="trade_history"),
     path("trade_history/<int:page>", views.trade_history, name="trade_history"),
     path("item_trade_history/<int:item_id>", views.item_trade_history, name="item_trade_history"),
+    path("currency_settings", views.currency_settings, name="currency_settings"),
 ]

@@ -3,6 +3,8 @@ from django.db import models
 import pycountry
 from django.utils import timezone
 import datetime
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 TRANSACTION_CHOICES = [
@@ -25,8 +27,29 @@ CURRENCY_CHOICES = [
 class User(AbstractUser):
     items = models.ManyToManyField('Item', blank=True, related_name="item_owner")
     transactions = models.ManyToManyField('Transaction', blank=True, related_name="transaction_owner")
+    
+
+class UserMarketSettings(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='market_settings', null=True)
     default_scm_currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='EUR', null=True, blank=True)
     default_paypal_currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='USD', null=True, blank=True)
+    scm_key_price_dollars = models.DecimalField(max_digits=4, decimal_places=2, default='2.2')
+    paypal_key_price_dollars = models.DecimalField(max_digits=4, decimal_places=2, default='1.7')
+
+    def __str__(self):
+        return f"{self.user} Market Settings"
+
+
+# Create UserMarketSettings for each user to store market settings. post_save signal is when the a save event occurs for the User.
+@receiver(post_save, sender=User)
+def create_user_market_settings(sender, instance, created, **kwargs):
+    if created:
+        UserMarketSettings.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_market_settings(sender, instance, **kwargs):
+    instance.market_settings.save()
+
 
 class Item(models.Model):
 

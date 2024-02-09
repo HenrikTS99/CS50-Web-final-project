@@ -5,9 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.db import IntegrityError
-from .models import User, Item, Transaction, Value
+from .models import User, Item, Transaction, Value, UserMarketSettings
 from django.db.models import Q
-from .forms import ItemForm, TradeSaleForm, TradeBuyForm, TransactionForm, TradeValueForm
+from .forms import ItemForm, TradeSaleForm, TradeBuyForm, TransactionForm, TradeValueForm, CurrencySettingsForm
 from . import utils
 from django.http import JsonResponse
 import json
@@ -49,6 +49,21 @@ def item_trade_history(request, item_id):
         "all_trades": item_trades,
     })
 
+
+def currency_settings(request):
+    # utils.get_current_key_sell_order()
+    form = CurrencySettingsForm(request.POST or None, instance=request.user.market_settings)
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse("index"))
+        else:
+            print(form.errors)
+
+
+    return render(request, "tf2folio/currency-settings.html", {
+        "settings_form": form
+    })
 
 def login_view(request):
     if request.method == 'POST':
