@@ -424,7 +424,8 @@ PARTICLE_EFFECTS_MAPPING = {
     "3143": "Petal Prance",
 }
 
-REVERSE_PARTICLE_MAPPING = {v: k for k, v in PARTICLE_EFFECTS_MAPPING.items()}
+REVERSE_PARTICLE_MAPPING_LOWER = {v.lower(): k for k, v in PARTICLE_EFFECTS_MAPPING.items()}
+
 
 WAR_PAINTS = [
     "Park Pigmented", "Sax Waxed", "Yeti Coated", "Croc Dusted", "Macaw Masked", 
@@ -570,14 +571,10 @@ def create_image(Item):
 def get_particle_id(particle_effect):
     if particle_effect:
         print(particle_effect)
-        particle_id = REVERSE_PARTICLE_MAPPING.get(particle_effect)
+        particle_id = REVERSE_PARTICLE_MAPPING_LOWER.get(particle_effect.lower())
         if particle_id:
             print("particle img sucsess: ", particle_id)
             return particle_id
-        elif particle_effect != particle_effect.title():
-            print("Particle ID lookup failed, trying again with capitalized title.")
-            return get_particle_id(particle_effect.title())
-
     return None
 
 
@@ -608,6 +605,7 @@ def process_items(request):
     
     return item_list, item_received_list, None
 
+# Make sure items arent already in another trade
 def validate_items(response, item_list, item_received_list):
     transaction_type = response.POST['transaction_type']
 
@@ -643,6 +641,7 @@ def get_and_validate_forms(request):
             return None, None, errorResponse
     return forms[0], forms[1], None
 
+
 def get_trade_history_redirect_response():
     return {
         "message": "Data sent successfully.",
@@ -650,19 +649,17 @@ def get_trade_history_redirect_response():
     }
 
 
-# Functions for handling  pure sales
+# Function for handling  pure sales, add sale price to item and find parent item
 def process_pure_sale(item, trade):
     print(item)
     tradeValue = trade.transaction_value
     value = Value.objects.create(item=item, transaction_method=tradeValue.transaction_method, 
                     currency=tradeValue.currency, amount=tradeValue.amount)
-    item.add_sale_price(value)
+    add_sale_price_and_check_profit(item, value)
     print(f'{item.item_title} sale price: {item.sale_price}')
     # find the original transaction and item that item came from
-    parent_item, origin_trade = get_parent_item_and_origin_trade(item)
-    if parent_item and origin_trade:
-        process_parent_item(parent_item, origin_trade)
-
+    get_parent_item_and_origin_trade(item)
+    
 
 def get_parent_item_and_origin_trade(item):
     origin_trade = None
@@ -676,30 +673,34 @@ def get_parent_item_and_origin_trade(item):
 
     if not origin_trade or origin_trade.transaction_type != "sale":
         # Purchase transactions can't have a parent item
-        return None, None
+        return
+    
     parent_item = origin_trade.items_sold.all()
     if len(parent_item) == 1:
-        return parent_item[0], origin_trade
-    return None, None
+        process_parent_item(parent_item[0], origin_trade)
 
 
 def process_parent_item(parent_item, origin_trade):
-    item_sale_price_objects = []
+    item_sale_price_values = get_item_sale_price_values(origin_trade)
+    if not item_sale_price_values:
+        return
+    # check if cash/keys in trade, if so, create Value object
+    if origin_trade.transaction_value:
+        item_sale_price_values.append(origin_trade.transaction_value)
+    sale_value = get_total_sale_value_object(item_sale_price_values, parent_item)
+    add_sale_price_and_check_profit(parent_item, sale_value)
+    # check if parent item has a parent item recursively
+    get_parent_item_and_origin_trade(parent_item)
+
+def get_item_sale_price_values(origin_trade):
+    item_sale_price_values = []
     for item in origin_trade.items_bought.all():
         if not item.sale_price:
             print(f'{item.item_title} not sold yet.')
-            return 
-        item_sale_price_objects.append(item.sale_price)
+            return None
+        item_sale_price_values.append(item.sale_price)
+    return item_sale_price_values
 
-    # check if cash/keys in trade, if so, create Value object
-    if origin_trade.transaction_value:
-        item_sale_price_objects.append(origin_trade.transaction_value)
-
-    sale_value = get_total_sale_value_object(item_sale_price_objects, parent_item)
-    parent_item.add_sale_price(sale_value)
-    # check if parent item has a parent item recursively
-    get_parent_item_and_origin_trade(parent_item)
-    
 
 def get_total_sale_value_object(value_objects, item):
     # check if all transaction methods are the same, if so add the sums of the amounts and return Value object
@@ -708,21 +709,26 @@ def get_total_sale_value_object(value_objects, item):
         return Value.objects.create(item=item, transaction_method=value_objects[0].transaction_method, 
                 currency=value_objects[0].currency, amount=sum([value_object.amount for value_object in value_objects]))
     else:
-        key_amount = 0
-        for value_object in value_objects:
-            print(f'value_object: {value_object}')
-            if value_object.transaction_method == "keys":
-                key_amount += value_object.amount
-            # Convert currency if needed and get key price. Add to key_amount
-            elif value_object.transaction_method in ["paypal", "scm_funds"]:
-                if value_object.currency != 'USD':
-                    converted_amount = convert_currency(value_object.amount, value_object.currency)
-                    if converted_amount is None:
-                        print ('Error converting currency, skipping this value object')
-                        continue
-                    value_object.amount = converted_amount
-                key_amount += get_key_price(value_object.amount, value_object.transaction_method)
+        key_amount = convert_sale_values_to_keys(value_objects)
         return Value.objects.create(item=item, transaction_method='keys', amount=key_amount)
+
+
+def convert_sale_values_to_keys(value_objects):
+    key_amount = 0
+    for value_object in value_objects:
+        print(f'value_object: {value_object}')
+        if value_object.transaction_method == "keys":
+            key_amount += value_object.amount
+        # Convert currency if needed and get key price. Add to key_amount
+        elif value_object.transaction_method in ["paypal", "scm_funds"]:
+            if value_object.currency != 'USD':
+                converted_amount = convert_currency(value_object.amount, value_object.currency)
+                if converted_amount is None:
+                    print ('Error converting currency, skipping this value object')
+                    continue
+                value_object.amount = converted_amount
+            key_amount += get_key_price(value_object.amount, value_object.transaction_method)
+    return key_amount
 
 
 def convert_currency(amount, from_currency, to_currency='USD'):
@@ -752,6 +758,15 @@ def get_key_price(amount_usd, transaction_method):
     return key_price
 
 
+def add_sale_price_and_check_profit(item, value):
+    item.add_sale_price(value)
+    print(item.purchase_price, 'purchase price')
+    profit_value = get_item_profit_value(item)
+    if profit_value:
+        item.add_profit_value(profit_value)
+        print(f'{item.item_title} profit: {item.profit_value}')
+
+# Functions for getting item profit value
 def get_item_profit_value(item):
     if item.purchase_price and item.sale_price:
         purchase_price, sale_price = normalize_transaction_values(item.purchase_price, item.sale_price)

@@ -7,10 +7,12 @@
 <div class="trade-display-container">
     <div class="trade-history-header">
         <h2 class="title">Trade History</h2>
+    {% if all_trades %}
         <div class="source-trades-checkbox-container">
             <input type="checkbox" id="show-source-trades-checkbox">
             <label class="checkbox-label" for="show-source-trades-checkbox">Show only source trades</label>
         </div>
+    {% endif %}
     </div>
 
 {% for trade in all_trades %}

@@ -88,7 +88,10 @@ class Item(models.Model):
     def add_sale_price(self, value_object):
         self.sale_price = value_object
         self.save()
-        self.get_and_add_profit_value()
+    
+    def add_profit_value(self, value_object):
+        self.profit_value = value_object
+        self.save()
 
     def get_and_add_profit_value(self):
         if self.purchase_price:
@@ -204,6 +207,6 @@ class Transaction(models.Model):
         currency = self.currency if self.currency else ""
         amount = self.amount if self.amount else ""
         if self.transaction_type == "sale":
-            return f"{self.owner} sold {items_sold_titles} for {amount} {self.transaction_method} {currency} {items_bought_titles} on {self.date}"
-        return f"{self.owner} bought {items_bought_titles} for {amount} {self.transaction_method} {currency} on {self.date}"
+            return f"{self.owner} sold {items_sold_titles} for {amount} {self.transaction_method} {currency} {items_bought_titles}"
+        return f"{self.owner} bought {items_bought_titles} for {amount} {self.transaction_method} {currency}"
 

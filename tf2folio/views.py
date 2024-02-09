@@ -213,12 +213,13 @@ def register_trade(request):
 
     trade = Transaction.create_trade(form, request.user, item_list, item_received_list)
 
+    # Create value object for the trade
     form_amount = valueForm.cleaned_data.get('amount')
     if form_amount is not None and transaction_method != 'items':
         value = Value.create_trade_value(valueForm, trade)
         trade.transaction_value = value
         trade.save()
-    trade.add_items(item_list, item_received_list) # Add the items to the many-to-many fields
+    trade.add_items(item_list, item_received_list) # Add the items to the trade many-to-many fields
    
     # If one item is sold only for pure, update the item's sale_price/value
     # TODO: handle if more than 1 item is sold for pure
