@@ -1,15 +1,16 @@
 import requests
 import json
+from cachetools import cached, TTLCache
 from .models import Item, Value, Transaction
 from django.template.loader import render_to_string
 from django.urls import reverse
 from decimal import Decimal, ROUND_DOWN
 import time
 from django.http import JsonResponse
-import datetime
 from django.core.paginator import Paginator
 from .forms import TransactionForm, TradeValueForm
 
+# [{"id": 1, "name:"Holy"}]
 PARTICLE_EFFECTS_MAPPING = {
     "4": "Community Sparkle",
     "5": "Holy Glow",
@@ -484,10 +485,9 @@ WEAPON_SKINS_LIST = [
 
 TEXTURE_NAMES = WAR_PAINTS + WEAPON_SKINS_LIST
 
-USD_KEY_PRICES = {
-    'scm_funds': 2.2,
-    'paypal': 1.7
-}
+
+# Create a cache that expires after 1 hour
+cache = TTLCache(maxsize=10, ttl=3600)
 
 conversion_rates_cache = {}
 
@@ -570,7 +570,7 @@ def create_image(Item):
 
 def get_particle_id(particle_effect):
     if particle_effect:
-        print(particle_effect)
+        print(particle_effect.lower())
         particle_id = REVERSE_PARTICLE_MAPPING_LOWER.get(particle_effect.lower())
         if particle_id:
             print("particle img sucsess: ", particle_id)
@@ -578,7 +578,24 @@ def get_particle_id(particle_effect):
     return None
 
 
-# New trade functions
+# Register trade view functions 
+
+def process_trade_request(request):
+    """
+    Processes the trade request by extractiong the transaction method, getting the item lists,
+    and getting and validating the forms. 
+    Returns these values along with any potential error JSON response.
+    """
+    transaction_method = request.POST.get('transaction_method')
+    item_list, item_received_list, error_response = process_items(request)
+    if error_response:
+        return transaction_method, item_list, item_received_list, None, None, error_response
+    error_response = validate_items(request, item_list, item_received_list)
+    if error_response:
+        return transaction_method, item_list, item_received_list, None, None, error_response
+    form, value_form, error_response = get_and_validate_forms(request)
+    return transaction_method, item_list, item_received_list, form, value_form, error_response
+
 def create_item_lists(item_ids):
     item_list = []
     for item_id in item_ids:
@@ -631,22 +648,41 @@ def validate_form(form):
     return None
 
 def get_and_validate_forms(request):
-    forms = []
-    forms.append(TransactionForm(request.POST))
-    forms.append(TradeValueForm(request.POST))
+    forms = [TransactionForm(request.POST), TradeValueForm(request.POST)]
 
     for form in forms:
-        errorResponse = validate_form(form)
-        if errorResponse:
-            return None, None, errorResponse
+        error_response = validate_form(form)
+        if error_response:
+            return None, None, error_response
     return forms[0], forms[1], None
 
 
-def get_trade_history_redirect_response():
-    return {
-        "message": "Data sent successfully.",
-        "redirect_url": reverse("trade_history")
-    }
+def create_trade(form, value_form, transaction_method, user, item_list, item_received_list):
+    """
+    Creates the trade object and the trade value object if possible. 
+    Adds all the items to the trade object many-to-many fields.
+
+    Returns:
+        trade object
+    """
+    trade = Transaction.create_trade(form, user, item_list, item_received_list)
+    form_amount = value_form.cleaned_data.get('amount')
+    if form_amount is not None and transaction_method != 'items':
+        value = Value.create_trade_value(value_form, trade)
+        trade.transaction_value = value
+        trade.save()
+    trade.add_items(item_list, item_received_list)
+    return trade
+
+
+def check_if_pure_sale(item_list, item_received_list, trade):
+    """
+    If one item is sold only for pure, update the item's sale_price/value
+    """
+    # TODO: handle if more than 1 item is sold for pure
+    if len(item_list) == 1 and not item_received_list and trade.transaction_type == 'sale':
+        print("logging pure sale")
+        process_pure_sale(item_list[0], trade)
 
 
 # Function for handling  pure sales, add sale price to item and find parent item
@@ -751,20 +787,27 @@ def convert_currency(amount, from_currency, to_currency='USD'):
     return None
 
 
+@cached(cache)
 def get_current_key_sell_order():
+    """
+    Gets the current cheapest sell order for Keys on Steam Community Market in USD
+    Return value is cached to avoid being rate limited
+
+    Returns:
+        Key price or None if error
+    """
     try:
         url = 'https://steamcommunity.com/market/itemordershistogram?country=US&language=english&currency=1&item_nameid=1'
         response = requests.get(url)
         data = response.json()
-        print(data)
-        print(data['sell_order_graph'])
+        return data['sell_order_graph'][0][0]
     except requests.exceptions.RequestException as error:
         print('Error:', error)
-    
     return None
 
 
 def get_key_price(value):
+
     amount_usd = value.amount
     transaction_method = value.transaction_method
     user = find_user_from_value(value)
@@ -788,7 +831,6 @@ def get_usd_key_prices(transaction_method, user):
 
 def add_sale_price_and_check_profit(item, value):
     item.add_sale_price(value)
-    print(item.purchase_price, 'purchase price')
     profit_value = get_item_profit_value(item)
     if profit_value:
         item.add_profit_value(profit_value)

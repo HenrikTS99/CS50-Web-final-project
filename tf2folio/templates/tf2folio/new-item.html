@@ -1,6 +1,6 @@
 {% load static %}
 
-<form id="item-register-form" class="item-form" action="{% url 'new_item' %}" method="POST">
+<form id="item-register-form" class="item-form" method="POST">
     <h2 class="title">Register Item</h2>
     {% csrf_token %}
     

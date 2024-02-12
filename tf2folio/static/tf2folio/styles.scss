@@ -370,6 +370,14 @@ input[type=number]::-webkit-outer-spin-button {
     width: 30%;
   }
 }
+
+#current-scm-key-price {
+  text-align: left;
+  font-size: 13px;
+  margin: -10px 0 0 4px;
+  color: rgb(200,200,200)
+}
+
 /* inventory */
 .inventory-display-container {
   background-color: $dark-background;

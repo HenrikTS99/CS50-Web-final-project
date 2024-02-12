@@ -135,6 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         selectedItems.add(selectedItemId);
+        console.log(selectedItemId)
 
         // Append the selected item to the "Selected Items" container
         const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -367,9 +368,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const keyImage = 'https://steamcdn-a.akamaihd.net/apps/440/icons/key.be0a5e2cda3a039132c35b67319829d785e50352.png';
             const scmImage = 'https://community.cloudflare.steamstatic.com/public/shared/images/responsive/share_steam_logo.png';
             const paypalImage = 'https://developer.valvesoftware.com/w/images/thumb/f/f9/Smallcredits.png/300px-Smallcredits.png';
-            const itemBox = document.querySelector('.item-box');
+            const itemBox = document.getElementById('transaction-method-box')
             const transactionSpan = document.querySelector('.transaction-method');
-            const itemImage = document.querySelector('.item-image');
+            const itemImage = document.getElementById('transaction-method-image')
 
             transactionBox.style.display = 'flex';
             itemImage.src = transactionMethod === 'keys' ? keyImage : transactionMethod === 'scm funds' ? scmImage : paypalImage;

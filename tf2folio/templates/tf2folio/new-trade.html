@@ -19,7 +19,7 @@
 
                     <div id="transaction-method-box" class="item-box border-unique">
                         <div class='item-box-image'>
-                            <img class="item-image" src="https://steamcdn-a.akamaihd.net/apps/440/icons/key.be0a5e2cda3a039132c35b67319829d785e50352.png">
+                            <img class="item-image" id="transaction-method-image" src="https://steamcdn-a.akamaihd.net/apps/440/icons/key.be0a5e2cda3a039132c35b67319829d785e50352.png">
                         </div>
                         <span class="pure-amount">0</span>
                         <span class="transaction-method unique">Keys</span>
@@ -65,8 +65,8 @@
     </div>
 
     <!-- User's default currencies -->
-    <input type="hidden" id="default-scm-currency" value="{{ user.market_settings.default_scm_currency }}">
-    <input type="hidden" id="default-paypal-currency" value="{{ user.market_settings.default_paypal_currency }}">
+    <input type="hidden" id="default-scm-currency" value="{{ user_market_settings.default_scm_currency }}">
+    <input type="hidden" id="default-paypal-currency" value="{{ user_market_settings.default_paypal_currency }}">
 
     <div id="item-register">
         {% include 'tf2folio/new-item.html' %}

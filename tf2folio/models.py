@@ -33,7 +33,7 @@ class UserMarketSettings(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='market_settings', null=True)
     default_scm_currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='EUR', null=True, blank=True)
     default_paypal_currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='USD', null=True, blank=True)
-    scm_key_price_dollars = models.DecimalField(max_digits=4, decimal_places=2, default='2.2')
+    scm_key_price_dollars = models.DecimalField(max_digits=4, decimal_places=2, default='2.15')
     paypal_key_price_dollars = models.DecimalField(max_digits=4, decimal_places=2, default='1.7')
 
     def __str__(self):

@@ -1,4 +1,4 @@
-from django.forms import ModelForm, inlineformset_factory
+from django.forms import ModelForm
 from .models import Item, Transaction, Value, UserMarketSettings, SELL_METHOD_CHOICES
 from django import forms
 from django.core.exceptions import ValidationError

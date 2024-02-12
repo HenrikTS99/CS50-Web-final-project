@@ -11,7 +11,7 @@ function generateImage() {
     console.log(formData);
 
     itemImage.style.display = 'block';
-    fetch('/generate_image_url', {
+    fetch('/get_item_data', {
         method: 'POST',
         body: formData
     })
