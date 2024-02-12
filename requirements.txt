@@ -4,3 +4,4 @@ requests
 pycountry
 django-compressor
 django_libsass
+cachetools
