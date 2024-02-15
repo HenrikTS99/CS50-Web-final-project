@@ -49,7 +49,7 @@ def trade_history(request, page=1):
     else:
         trades = Transaction.objects.filter(owner=request.user).order_by('-date')
 
-    all_trades = utils.paginate(trades, request, page)
+    all_trades = utils.paginate(trades, page)
     return render(request, "tf2folio/trade-history.html", {
         "all_trades": all_trades
     })
@@ -269,6 +269,7 @@ def register_trade(request):
         value_form,
         error_response
     ) = utils.process_trade_request(request)
+    
     if error_response:
         return error_response
     trade = utils.create_trade(form, value_form, transaction_method,

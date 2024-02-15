@@ -1,14 +1,17 @@
-import requests
+"""
+This module contains utility functions for the tf2folio app. It includes functions for views module and
+models module.
+"""
+
 import os
 import json
-from cachetools import cached, TTLCache
-from .models import Item, Value, Transaction
-from django.template.loader import render_to_string
-from django.urls import reverse
-from decimal import Decimal, ROUND_DOWN
 import time
+from decimal import Decimal, ROUND_DOWN
 from django.http import JsonResponse
 from django.core.paginator import Paginator
+import requests
+from cachetools import cached, TTLCache
+from .models import Item, Value, Transaction
 from .forms import TransactionForm, TradeValueForm
 
 # Load particle effects and warpaints dicts and lists from JSON files
@@ -28,16 +31,22 @@ WEAPON_SKINS_LIST = load_json('weapon_skins.json')
 TEXTURE_NAMES = WAR_PAINTS + WEAPON_SKINS_LIST
 
 # Create a cache that expires after 1 hour
-cache = TTLCache(maxsize=10, ttl=3600)
+cache = TTLCache(maxsize=30, ttl=3600)
 
 conversion_rates_cache = {}
 
-def paginate(posts, request, page):
+def paginate(posts, page):
     p = Paginator(posts, 10)
     return p.get_page(page)
 
-    
+
+# Functions for creating item data from form data
 def create_item_data(form):
+    """
+    Creates the title, image_url, and particle_id for the item from the form data.
+    Does not save the item to the database, just gets the data.
+    Returns these values.
+    """
     item = form.save(commit=False)
     title = create_title(item)
     image_url = create_image(item)
@@ -46,6 +55,9 @@ def create_item_data(form):
 
 
 def create_title(Item):
+    """
+    Creates the title for the item from the form data.
+    """
     title_parts = []
     if not Item.craftable:
         title_parts.append('Uncraftable')
@@ -65,13 +77,56 @@ def create_title(Item):
     title_parts.append(Item.item_name)
 
     if Item.texture_name:
-        if not Item.wear:
-            Item.wear = 'Factory New'
-        title_parts.append(f"({Item.get_wear_display().title()})")
+        wear = Item.get_wear_display() if Item.wear else 'Factory New'
+        title_parts.append(f"({wear})")
     return ' '.join(title_parts)
 
 
 def create_image(Item):
+    """
+    Creates the search name for the item and fetches the image url from the API, using the search name.
+    """
+    search_name = create_search_name(Item)
+
+    for _ in range(2):
+        image_url = fetch_image_url(search_name)
+        if image_url:
+            return image_url
+        # Test again with capitalized title
+        search_name = search_name.title()
+
+    if Item.texture_name:
+        search_names = create_skin_search_names(Item)
+        for name in search_names:
+            image_url = fetch_image_url(name)
+            if image_url:
+                return image_url
+    return None
+
+
+def fetch_image_url(search_name):
+    """
+    Fetches the image url from the API using the search name.
+    Returns the image url if successful, else returns None.
+    """
+    print(search_name)
+    api_url = f"https://api.steamapis.com/image/item/440/{search_name}"
+    try:
+        response = requests.get(api_url, timeout=5)
+    except requests.exceptions.RequestException as e:
+        print('Request failed', e)
+        return
+    if response.status_code == 200:
+        print("item img sucsess")
+        return response.url
+    else:
+        print('Failed to fetch the image', 404, search_name)
+
+
+def create_search_name(Item):
+    """
+    Creates the search name for the item, which is used to look up the image url from the API.
+    """
     search_name = ''
     # Warpaints
     if Item.texture_name:
@@ -88,39 +143,27 @@ def create_image(Item):
         search_name = Item.item_name
     else:
         search_name = f'{Item.quality.title()} {Item.item_name}'
-    
-    for i in range(2):
-        print(search_name)
-        api_url = f"https://api.steamapis.com/image/item/440/{search_name}"
-        try:
-            response = requests.get(api_url, timeout=5)
-        except requests.exceptions.Timeout:
-            print("Request timed out")
-            break
-        if response.status_code == 200:
-            print("item img sucsess")
-            return response.url
-        else:
-            print('Failed to fetch the image', 404, search_name)
-            print("Testing capitalized title.")
-            search_name = search_name.title()
-    return None # 'https://wiki.teamfortress.com/w/images/thumb/c/c4/Unknownweapon.png/256px-Unknownweapon.png'
+    return search_name
 
-# TODO: add function for finding images for warpaints
+
+def create_skin_search_names(Item):
+    """
+    Creates search names for each wear tier of the skin, for higher chance to find a image url.
+    """
+    search_names = []
+    for i in Item.WEAR_TIERS:
+        search_names.append(f'{Item.texture_name.title()} {Item.item_name} ({i[1]})')
+    return search_names
 
 
 def get_particle_id(particle_effect):
+    """Gets the particle id from the particle effect name."""
     if particle_effect:
-        print(particle_effect.lower())
-        particle_id = REVERSE_PARTICLE_MAPPING_LOWER.get(particle_effect.lower())
-        if particle_id:
-            print("particle img sucsess: ", particle_id)
-            return particle_id
+        return REVERSE_PARTICLE_MAPPING_LOWER.get(particle_effect.lower())
     return None
 
 
-# Register trade view functions 
-
+# Functions for the register_trade view
 def process_trade_request(request):
     """
     Processes the trade request by extractiong the transaction method, getting the item lists,
@@ -138,6 +181,7 @@ def process_trade_request(request):
     return transaction_method, item_list, item_received_list, form, value_form, error_response
 
 def create_item_lists(item_ids):
+    """Creates a list of Item objects from the item_ids."""
     item_list = []
     for item_id in item_ids:
         try:
@@ -147,24 +191,32 @@ def create_item_lists(item_ids):
             return JsonResponse({"error": "Item not found."}, status=404)
     return item_list
 
-# First two return values are the item lists, third return value is the error response
+
 def process_items(request):
+    """
+    Processes the items from the request.
+    Returns the item lists and any potential error JSON response.
+    """
     item_ids = json.loads(request.POST['itemIds'])
     item_received_ids = json.loads(request.POST['itemReceivedIds'])
 
     item_list = create_item_lists(item_ids)
-    if item_list == []:
+    if not item_list:
         return None, None, JsonResponse({"error": "No items selected."}, status=404)
 
     item_received_list = create_item_lists(item_received_ids)
     # item transaction trades need items received
-    if item_received_list == [] and request.POST['transaction_method'] == "items":
+    if not item_received_list and request.POST['transaction_method'] == "items":
         return None, None, JsonResponse({"error": "No items received in item trade."}, status=404)
-    
+
     return item_list, item_received_list, None
 
-# Make sure items arent already in another trade
+
 def validate_items(response, item_list, item_received_list):
+    """
+    Validates the items to make sure they aren't already in another trade.
+    Returns a JSON response if there is an error.
+    """
     transaction_type = response.POST['transaction_type']
 
     for item in item_list:
@@ -183,12 +235,17 @@ def validate_items(response, item_list, item_received_list):
 
 
 def validate_form(form):
+    """Returns a JSON response if the form is not valid."""
     if not form.is_valid():
         print(form.errors)
         return JsonResponse({"errors": form.errors}, status=400)
     return None
 
 def get_and_validate_forms(request):
+    """
+    Gets and validates the forms from the request.
+    Returns the forms if they are valid, else returns a error JSON response.
+    """
     forms = [TransactionForm(request.POST), TradeValueForm(request.POST)]
 
     for form in forms:
@@ -218,9 +275,10 @@ def create_trade(form, value_form, transaction_method, user, item_list, item_rec
 
 def check_if_pure_sale(item_list, item_received_list, trade):
     """
-    If one item is sold only for pure, update the item's sale_price/value
+    If one item is sold only for pure, update the item's sale_price/value.
+    Function can only handle one item sold for pure.
+    Pure means keys (in-game currency) or cash, not items.
     """
-    # TODO: handle if more than 1 item is sold for pure
     if len(item_list) == 1 and not item_received_list and trade.transaction_type == 'sale':
         print("logging pure sale")
         process_pure_sale(item_list[0], trade)
@@ -228,17 +286,29 @@ def check_if_pure_sale(item_list, item_received_list, trade):
 
 # Function for handling  pure sales, add sale price to item and find parent item
 def process_pure_sale(item, trade):
+    """
+    Handles pure sales, creates the sale price value object,
+    and adds it to the item 'sale_price' field.
+
+    Then attempts to find the parent item and origin trade.
+    The parent item is the item that was sold in order to acquire the current item.
+    The origin trade is the trade that the item was recieved in.
+    """
     print(item)
-    tradeValue = trade.transaction_value
-    value = Value.objects.create(item=item, transaction_method=tradeValue.transaction_method, 
-                    currency=tradeValue.currency, amount=tradeValue.amount)
+    trade_value = trade.transaction_value
+    value = Value.objects.create(item=item, transaction_method=trade_value.transaction_method,
+                    currency=trade_value.currency, amount=trade_value.amount)
     add_sale_price_and_check_profit(item, value)
     print(f'{item.item_title} sale price: {item.sale_price}')
     # find the original transaction and item that item came from
     get_parent_item_and_origin_trade(item)
-    
+
 
 def get_parent_item_and_origin_trade(item):
+    """
+    Tries to find the parent item and origin trade for the item.
+    If there is only 1 parent item, and the origin trade is a purchase, it processes the parent item.
+    """
     origin_trade = None
     try:
         origin_trade = Transaction.objects.get(items_bought=item)
@@ -258,6 +328,15 @@ def get_parent_item_and_origin_trade(item):
 
 
 def process_parent_item(parent_item, origin_trade):
+    """
+    Processes the parent item and origin trade.
+
+    Checks if all the items in the origin trade have a sale price,
+    and if so, adds the origin trade transaction_value if it exists, 
+    and adds all the values together and adds it to the parent item's sale price.
+
+    If parent item then also has a purchase price, it calculates the profit and adds the profit value object to the item.
+    """
     item_sale_price_values = get_item_sale_price_values(origin_trade)
     if not item_sale_price_values:
         return
@@ -269,7 +348,12 @@ def process_parent_item(parent_item, origin_trade):
     # check if parent item has a parent item recursively
     get_parent_item_and_origin_trade(parent_item)
 
+
 def get_item_sale_price_values(origin_trade):
+    """
+    Gets the sale price values for the items in the origin trade.
+    If an item does not have a sale price, it returns None.
+    """
     item_sale_price_values = []
     for item in origin_trade.items_bought.all():
         if not item.sale_price:
@@ -280,46 +364,43 @@ def get_item_sale_price_values(origin_trade):
 
 
 def get_total_sale_value_object(value_objects, item):
-    # check if all transaction methods are the same, if so add the sums of the amounts and return Value object
+    """
+    Adds all the value objects together and returns a new Value object with the sum.
+
+    If all the value objects have the same transaction method, it returns a new Value object with the sum.
+    If the value objects have different transaction methods, it converts the values to keys and returns a new Value object with the sum.
+    """
     if all(value_object.transaction_method == value_objects[0].transaction_method for value_object in value_objects):
         print("Same transaction method:", value_objects[0].transaction_method)
         return Value.objects.create(item=item, transaction_method=value_objects[0].transaction_method, 
                 currency=value_objects[0].currency, amount=sum([value_object.amount for value_object in value_objects]))
     else:
-        key_amount = convert_sale_values_to_keys(value_objects)
-        return Value.objects.create(item=item, transaction_method='keys', amount=key_amount)
+        return convert_sale_values_to_key_value_objects(value_objects, item)
+        
 
-
-def convert_sale_values_to_keys(value_objects):
-    key_amount = 0
+def convert_sale_values_to_key_value_objects(value_objects, item):
+    """
+    Converts a list of value objects to their equivalent in keys.
+    It then creates and returns a new Value object that represents the total sum of all the converted values.
+    """
+    key_value_objects = []
     for value_object in value_objects:
-        print(f'value_object: {value_object}')
-        if value_object.transaction_method == "keys":
-            key_amount += value_object.amount
-        # Convert currency if needed and get key price. Add to key_amount
-        elif value_object.transaction_method in ["paypal", "scm_funds"]:
-            if value_object.currency != 'USD':
-                converted_amount = convert_currency(value_object.amount, value_object.currency)
-                if converted_amount is None:
-                    print ('Error converting currency, skipping this value object')
-                    continue
-                value_object.amount = converted_amount
-            key_amount += get_key_price(value_object)
-    return key_amount
+        key_value_objects.append(convert_value_method_to_keys(value_object))
+    return Value.objects.create(item=item, transaction_method=key_value_objects[0].transaction_method, 
+                currency=key_value_objects[0].currency, amount=sum([value_object.amount for value_object in key_value_objects]))
 
 
+@cached(cache)
 def convert_currency(amount, from_currency, to_currency='USD'):
-    if from_currency in conversion_rates_cache and to_currency in conversion_rates_cache[from_currency] and time.time() - conversion_rates_cache[from_currency][to_currency]['time'] < 3600:
-        print(f'Using cached conversion rate for {from_currency} to {to_currency}')
-        return Decimal(amount/Decimal(conversion_rates_cache[from_currency][to_currency]['rate']))
+    """
+    Converts the amount from one currency to another using the exchangerate-api.com API.
+    
+    Conversions are cached for 1 hour.
+    Returns the converted amount or None if there is an error."""
     try:
         url = f'https://api.exchangerate-api.com/v4/latest/{to_currency}'
         response = requests.get(url)
         data = response.json()
-        if from_currency not in conversion_rates_cache:
-            conversion_rates_cache[from_currency] = {}
-        conversion_rates_cache[from_currency][to_currency] = {'rate': data['rates'][from_currency], 'time': time.time()}
-        print(conversion_rates_cache)
         return Decimal(amount/Decimal(data['rates'][from_currency]))
     except requests.exceptions.RequestException as error:
         print('Error:', error)
@@ -348,37 +429,50 @@ def get_current_key_sell_order():
 
 
 def get_key_price(value):
-
+    """
+    Converts the usd amount to keys and returns the key price.
+    The value amount is always converted to USD before this function is called.
+    """
     amount_usd = value.amount
     transaction_method = value.transaction_method
     user = find_user_from_value(value)
     key_price = Decimal(amount_usd)/Decimal(get_usd_key_prices(transaction_method, user))
     key_price =  key_price.quantize(Decimal('.00'), rounding=ROUND_DOWN)
-    #print(f'key_price: {key_price} from {amount_usd} USD')
     return key_price
 
 def find_user_from_value(value):
+    """Find and returns the user from the value object."""
     if value.transaction:
         return value.transaction.owner
     elif value.item:
         return value.item.owner
 
 def get_usd_key_prices(transaction_method, user):
+    """
+    Returns the key price in USD from the user's market settings.
+    Either the SCM key price or the PayPal key price, depending on the transaction method.
+    """
     if transaction_method == 'scm_funds':
         return user.market_settings.scm_key_price_dollars
-    elif transaction_method == 'paypal':
-        return user.market_settings.paypal_key_price_dollars
+    return user.market_settings.paypal_key_price_dollars
 
 
 def add_sale_price_and_check_profit(item, value):
+    """
+    Adds the sale price to the item and checks if the item has a purchase price.
+    If it does, it calculates the profit and adds the profit value object to the item.
+    """
     item.add_sale_price(value)
     profit_value = get_item_profit_value(item)
     if profit_value:
         item.add_profit_value(profit_value)
         print(f'{item.item_title} profit: {item.profit_value}')
 
-# Functions for getting item profit value
+
 def get_item_profit_value(item):
+    """
+    Gets the profit value object for the item if it has a purchase price and sale price.
+    """
     if item.purchase_price and item.sale_price:
         purchase_price, sale_price = normalize_transaction_values(item.purchase_price, item.sale_price)
 
@@ -389,15 +483,21 @@ def get_item_profit_value(item):
         return profit_value
     return None
 
-# If values are in different currencies or transaction methods, convert to be in same currency and transaction method
+
+# Functions for normalizing transaction values.
 def normalize_transaction_values(purchase_value, sale_value):
+    """
+    Normalizes the transaction values to be in the same currency and transaction method.
+
+    Defaults to keys if the transaction method is not the same.
+    If the transaction method is the same, defaults to the sale value's currency.
+    """
     if purchase_value.transaction_method != sale_value.transaction_method:
         purchase_price = convert_value_method_to_keys(purchase_value)
         sale_price = convert_value_method_to_keys(sale_value)
-            
-    elif purchase_value.currency != sale_value.currency:
-        purchase_price, sale_price = convert_to_same_currency(purchase_value, sale_value)
 
+    elif purchase_value.currency != sale_value.currency:
+        sale_price = convert_to_same_currency(purchase_value, sale_value)
     else:
         purchase_price = purchase_value
         sale_price = sale_value
@@ -405,6 +505,10 @@ def normalize_transaction_values(purchase_value, sale_value):
 
 
 def convert_to_same_currency(value1, value2):
+    """
+    Converts the values to the same currency.
+    Uses value1's currency as the conversion currency.
+    """
     value2 = value2.copy() # copy to avoid changing original value object
     conversion_currency = value1.currency
     converted_amount = round(convert_currency(value2.amount, value2.currency, conversion_currency), 2)
@@ -414,10 +518,15 @@ def convert_to_same_currency(value1, value2):
         return None
     value2.amount = converted_amount
     value2.currency = conversion_currency
-    return value1, value2
+    return value2
 
 
 def convert_value_method_to_keys(value):
+    """
+    Converts the value to keys if it's not already in keys.
+    If the value currency is not USD, it converts the currency to USD,
+    and then converts the USD amount to keys.
+    """
     value = value.copy() # copy to avoid changing original value object
     if value.transaction_method == 'keys':
         return value
