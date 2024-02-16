@@ -56,7 +56,7 @@ class UserMarketSettings(models.Model):
 
 # Create UserMarketSettings for each user to store market settings.
 @receiver(post_save, sender=User)
-def create_user_market_settings(_sender, instance, created, **_kwargs):
+def create_user_market_settings(sender, instance, created, **_kwargs):
     """
     Signal reciever that creates a UserMarketSettings object for each new user.
 
