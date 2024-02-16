@@ -272,7 +272,7 @@ def register_trade(request):
     
     if error_response:
         return error_response
-    trade = utils.create_trade(form, value_form, transaction_method,
+    trade = utils.create_trade_and_add_items(form, value_form, transaction_method,
                                request.user, item_list, item_received_list)
     utils.check_if_pure_sale(item_list, item_received_list, trade)
 

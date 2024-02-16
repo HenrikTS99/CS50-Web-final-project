@@ -253,7 +253,7 @@ def get_and_validate_forms(request):
     return forms[0], forms[1], None
 
 
-def create_trade(form, value_form, transaction_method, user, item_list, item_received_list):
+def create_trade_and_add_items(form, value_form, transaction_method, user, item_list, item_received_list):
     """
     Creates the trade object and the trade value object if possible. 
     Adds all the items to the trade object many-to-many fields.
@@ -261,7 +261,7 @@ def create_trade(form, value_form, transaction_method, user, item_list, item_rec
     Returns:
         trade object
     """
-    trade = Transaction.create_trade(form, user, item_list, item_received_list)
+    trade = Transaction.create_trade(form, user)
     form_amount = value_form.cleaned_data.get('amount')
     if form_amount is not None and transaction_method != 'items':
         value = Value.create_trade_value(value_form, trade)
@@ -441,8 +441,7 @@ def find_user_from_value(value):
     """Find and returns the user from the value object."""
     if value.transaction:
         return value.transaction.owner
-    elif value.item:
-        return value.item.owner
+    return value.item.owner
 
 def get_usd_key_prices(transaction_method, user):
     """
@@ -525,6 +524,7 @@ def convert_value_method_to_keys(value):
     and then converts the USD amount to keys.
     """
     value = value.copy() # copy to avoid changing original value object
+
     if value.transaction_method == 'keys':
         return value
     if value.transaction_method in ['paypal', 'scm_funds']:
