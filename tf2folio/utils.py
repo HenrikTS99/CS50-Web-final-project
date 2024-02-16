@@ -1,11 +1,10 @@
 """
-This module contains utility functions for the tf2folio app. It includes functions for views module and
-models module.
+This module contains utility functions for the tf2folio app. It includes functions for
+views module and models module.
 """
 
 import os
 import json
-import time
 from decimal import Decimal, ROUND_DOWN
 from django.http import JsonResponse
 from django.core.paginator import Paginator
@@ -33,7 +32,6 @@ TEXTURE_NAMES = WAR_PAINTS + WEAPON_SKINS_LIST
 # Create a cache that expires after 1 hour
 cache = TTLCache(maxsize=30, ttl=3600)
 
-conversion_rates_cache = {}
 
 def paginate(posts, page):
     p = Paginator(posts, 10)
@@ -374,8 +372,7 @@ def get_total_sale_value_object(value_objects, item):
         print("Same transaction method:", value_objects[0].transaction_method)
         return Value.objects.create(item=item, transaction_method=value_objects[0].transaction_method, 
                 currency=value_objects[0].currency, amount=sum([value_object.amount for value_object in value_objects]))
-    else:
-        return convert_sale_values_to_key_value_objects(value_objects, item)
+    return convert_sale_values_to_key_value_objects(value_objects, item)
         
 
 def convert_sale_values_to_key_value_objects(value_objects, item):
