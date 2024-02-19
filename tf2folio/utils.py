@@ -144,13 +144,31 @@ def create_search_name(Item):
     return search_name
 
 
+def reorder_wear_tiers(Item):
+    """
+    Reorders the wear tiers for the skin, so that the wear tier of the item is first.
+    Item.WEAR_TIERS is a list of tuples, where each tuple is (wear, Display Name).
+
+    Returns:
+      list: The reordered wear tiers list with just the Display Name tuple values.
+    """
+    wear_tiers = list(Item.WEAR_TIERS)
+    for i, wear_tier in enumerate(wear_tiers):
+        if wear_tier[0] == Item.wear:
+            wear_tiers.insert(0, wear_tiers.pop(i))
+            break
+    wear_tiers = [tier[1] for tier in wear_tiers]
+    return wear_tiers
+
 def create_skin_search_names(Item):
     """
     Creates search names for each wear tier of the skin, for higher chance to find a image url.
     """
     search_names = []
-    for i in Item.WEAR_TIERS:
-        search_names.append(f'{Item.texture_name.title()} {Item.item_name} ({i[1]})')
+    wear_tiers = reorder_wear_tiers(Item)
+
+    for i in wear_tiers:
+        search_names.append(f'{Item.texture_name.title()} {Item.item_name.title()} ({i})')
     return search_names
 
 
