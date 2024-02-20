@@ -1,6 +1,5 @@
 from django.test import TestCase, Client
 from .models import User, Item, Transaction, Value
-import datetime
 from . import utils
 # Create your tests here.
 
@@ -53,7 +52,6 @@ class TransactionTestCase(TestCase):
             owner=self.user,
             transaction_type='sale',
             description='Test transaction keys method',
-            date = datetime.date.today()
         )
 
         transaction_value = Value.objects.create(
@@ -89,7 +87,6 @@ class ProfitCalculationTest(TestCase):
         self.transaction0 = Transaction.objects.create(
             owner=self.user,
             transaction_type='buy',
-            date=datetime.date.today()
         )
 
         self.transaction0.transaction_value = Value.objects.create(
@@ -103,21 +100,18 @@ class ProfitCalculationTest(TestCase):
         self.transaction1 = Transaction.objects.create(
             owner=self.user,
             transaction_type='sale',
-            date=datetime.date.today()
         )
         self.transaction1.add_items([self.item1], [self.item2])
 
         self.transaction2 = Transaction.objects.create(
             owner=self.user,
             transaction_type='sale',
-            date=datetime.date.today()
         )
         self.transaction2.add_items([self.item2], [self.item3])
 
         self.transaction3 = Transaction.objects.create(
             owner=self.user,
             transaction_type='sale',
-            date=datetime.date.today()
         )
         
         self.transaction3.transaction_value = Value.objects.create(

@@ -21,10 +21,12 @@ let currencyField;
 let amountLabels;
 let currencyLabels;
 
-let selectedItems = new Set();
-let transaction_type = "sale";
-let isReceivedItemForm = false;
-
+const SALE = "sale";
+const BUY = "buy";
+const DISPLAY_BLOCK = "block";
+const DISPLAY_NONE = "none";
+const BTN_PRIMARY = "btn btn-primary";
+const BTN_OUTLINE_PRIMARY = "btn btn-outline-primary";
 const TRANSACTION_METHODS = {
   PAYPAL: "paypal",
   SCM_FUNDS: "scm_funds",
@@ -40,6 +42,10 @@ const TRANSACTION_IMAGES = {
   [TRANSACTION_METHODS.PAYPAL]:
     "https://developer.valvesoftware.com/w/images/thumb/f/f9/Smallcredits.png/300px-Smallcredits.png",
 };
+
+let selectedItems = new Set();
+let transaction_type = SALE;
+let isReceivedItemForm = false;
 
 // Function Declarations
 
@@ -79,7 +85,7 @@ function fetchItemHTML(itemId, item_type) {
 function appendItemToPage(data, item_type) {
   let itemsContainer, selectedIndex;
 
-  if (item_type == "bought" && transaction_type == "sale") {
+  if (item_type == "bought" && transaction_type == SALE) {
     itemsContainer = receivedItemsContainer;
     selectedIndex = itemsBoughtDropdown.selectedIndex;
   } else {
@@ -129,17 +135,17 @@ function addItemToDropdowns(itemElement, itemId) {
 
 // Toggle between sale and buy forms
 function toggleForm() {
-  const isSale = transaction_type == "sale";
+  const isSale = transaction_type == SALE;
   const transactionTitles = document.querySelectorAll(".transaction-titles *");
 
-  saleButton.className = isSale ? "btn btn-primary" : "btn btn-outline-primary";
-  buyButton.className = isSale ? "btn btn-outline-primary" : "btn btn-primary";
-  saleForm.style.display = isSale ? "block" : "none";
-  buyForm.style.display = isSale ? "none" : "block";
+  saleButton.className = isSale ? BTN_PRIMARY : BTN_OUTLINE_PRIMARY;
+  buyButton.className = isSale ? BTN_OUTLINE_PRIMARY : BTN_PRIMARY;
+  saleForm.style.display = isSale ? DISPLAY_BLOCK : DISPLAY_NONE;
+  buyForm.style.display = isSale ? DISPLAY_NONE : DISPLAY_BLOCK;
   // Change titles and toggle received items selection
   document.querySelector(".items-received-selection").style.display = isSale
-    ? "block"
-    : "none";
+    ? DISPLAY_BLOCK
+    : DISPLAY_NONE;
   document.querySelector("#sold-selection-title").textContent = isSale
     ? "Add sold item"
     : "Add bought item";
@@ -149,9 +155,9 @@ function toggleForm() {
 
 // Show register item form, hide trade register form
 function register_item(button) {
-  tradeDisplaySection.style.display = "none";
-  tradeRegisterSection.style.display = "none";
-  itemRegisterSection.style.display = "block";
+  tradeDisplaySection.style.display = DISPLAY_NONE;
+  tradeRegisterSection.style.display = DISPLAY_NONE;
+  itemRegisterSection.style.display = DISPLAY_BLOCK;
   if (button.id == "add-received-item") {
     isReceivedItemForm = true;
   }
@@ -187,8 +193,8 @@ function add_item(event) {
 
 function updateFormDisplayForNewItem() {
   tradeDisplaySection.style.display = "grid";
-  tradeRegisterSection.style.display = "block";
-  itemRegisterSection.style.display = "none";
+  tradeRegisterSection.style.display = DISPLAY_BLOCK;
+  itemRegisterSection.style.display = DISPLAY_NONE;
 }
 // Append the new item to the page, received items container if it's a received item
 function appendNewItem(data) {
@@ -247,7 +253,7 @@ function createFormData(event, itemIds, itemReceivedIds) {
   const formData = new FormData(event.target);
   // add transaction type
   formData.append("transaction_type", transaction_type);
-  if (transaction_type == "buy") {
+  if (transaction_type == BUY) {
     formData.append("transaction_method", formData.get("transaction_method-2"));
     formData.delete("transaction_method-2");
   }
@@ -258,35 +264,45 @@ function createFormData(event, itemIds, itemReceivedIds) {
   return formData;
 }
 
-// Function for handling JsonResponse errors and form errors
+// Function for displaying JsonResponse errors and form errors
 function displayErrors(errors) {
-  console.log(errors);
   const errorElement = document.getElementById("trade-register-error");
   errorElement.innerHTML = "";
-  errorElement.style.display = "block";
+  errorElement.style.display = DISPLAY_BLOCK;
 
   if (errors.error) {
-    // handle JsonResponse error message
-    let errorDiv = document.createElement("div");
-    errorDiv.textContent = errors.error;
-    errorElement.appendChild(errorDiv);
+    displayJsonResponseErrors(errors, errorElement);
   } else {
-    // handle form errors
-    for (let field in errors.errors) {
-      let fieldErrors = errors.errors[field];
-      for (let error of fieldErrors) {
-        let errorDiv = document.createElement("div");
-        errorDiv.textContent = `${field}: ${error}`;
-        errorElement.appendChild(errorDiv);
-      }
+    displayFormErrors(errors, errorElement);
+  }
+}
+
+function displayJsonResponseErrors(errors, errorElement) {
+  let errorDiv = createErrorDiv(errors.error);
+  errorElement.appendChild(errorDiv);
+}
+
+function displayFormErrors(errors, errorElement) {
+  for (let field in errors.errors) {
+    let fieldErrors = errors.errors[field];
+    for (let error of fieldErrors) {
+      let errorDiv = createErrorDiv(`${field}: ${error}`);
+      errorElement.appendChild(errorDiv);
     }
   }
+}
+
+// Create a div element with an error message
+function createErrorDiv(message) {
+  let errorDiv = document.createElement("div");
+  errorDiv.textContent = message;
+  return errorDiv;
 }
 
 // Clear and hide error messages
 function clearErrors() {
   const errorElement = document.getElementById("trade-register-error");
-  errorElement.style.display = "none";
+  errorElement.style.display = DISPLAY_NONE;
   errorElement.innerHTML = "";
 }
 
@@ -336,7 +352,7 @@ function handleCashTransactionMethod(transactionMethod) {
     "#default-paypal-currency"
   ).value;
 
-  setDisplayValue("block");
+  setDisplayValue(DISPLAY_BLOCK);
   const defaultCurrency =
     transactionMethod == TRANSACTION_METHODS.PAYPAL
       ? defaultPaypalCurrency
@@ -349,13 +365,13 @@ function handleCashTransactionMethod(transactionMethod) {
 
 function handleKeyTransactionMethod(transactionMethod) {
   setTransactionBoxDisplay(transactionMethod, "unique");
-  setDisplayValue("block");
+  setDisplayValue(DISPLAY_BLOCK);
   hideCurrencyFieldsAndLabels();
 }
 
 function handleItemsTransactionMethod(transactionMethod) {
   setTransactionBoxDisplay(transactionMethod);
-  setDisplayValue("none");
+  setDisplayValue(DISPLAY_NONE);
   // set the transaction method to keys if it's a purchase form
   const keysRadioButton2 = [...purchaseTransactionRadioButtons].find(
     (radioButton2) => radioButton2.value == TRANSACTION_METHODS.KEYS
@@ -363,8 +379,8 @@ function handleItemsTransactionMethod(transactionMethod) {
   if (keysRadioButton2) {
     keysRadioButton2.checked = true;
     if (amountFields[1] && amountLabels[1]) {
-      amountFields[1].style.display = "block";
-      amountLabels[1].style.display = "block";
+      amountFields[1].style.display = DISPLAY_BLOCK;
+      amountLabels[1].style.display = DISPLAY_BLOCK;
     }
   }
 }
@@ -372,7 +388,7 @@ function handleItemsTransactionMethod(transactionMethod) {
 // Set the transaction box display based on the transaction method, quality is border and text color
 function setTransactionBoxDisplay(transactionMethod, quality) {
   if (transactionMethod == TRANSACTION_METHODS.ITEMS) {
-    transactionBox.style.display = "none";
+    transactionBox.style.display = DISPLAY_NONE;
     return;
   }
 
@@ -419,8 +435,8 @@ function updateTransactionBoxCurrency(transactionMethod) {
 // Hide currency fields and labels (if the transaction method is 'keys')
 function hideCurrencyFieldsAndLabels() {
   currencyFields.forEach((field, index) => {
-    field.style.display = "none";
-    currencyLabels[index].style.display = "none";
+    field.style.display = DISPLAY_NONE;
+    currencyLabels[index].style.display = DISPLAY_NONE;
   });
 }
 
@@ -439,12 +455,12 @@ function addItemRemovalListener(elements) {
 
 function addListeners() {
   saleButton.addEventListener("click", () => {
-    transaction_type = "sale";
+    transaction_type = SALE;
     toggleForm();
   });
 
   buyButton.addEventListener("click", () => {
-    transaction_type = "buy";
+    transaction_type = BUY;
     toggleForm();
     clearReceivedItems();
   });
@@ -541,8 +557,8 @@ document.addEventListener("DOMContentLoaded", function () {
   currencyLabels = document.querySelectorAll(".currency-label");
 
   // Set initial display styles
-  document.querySelector("#buy-form").style.display = "none";
-  itemRegisterSection.style.display = "none";
+  document.querySelector("#buy-form").style.display = DISPLAY_NONE;
+  itemRegisterSection.style.display = DISPLAY_NONE;
 
   // Add event listeners and set initial transaction method
   addListeners();

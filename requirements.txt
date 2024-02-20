@@ -1,7 +1,6 @@
-Django
-datetime
-requests
-pycountry
-django-compressor
-django_libsass
-cachetools
+Django==4.2.7
+requests==2.31.0
+pycountry==23.12.11
+django-compressor==4.4
+django_libsass==0.9
+cachetools==5.3.2
