@@ -1,13 +1,13 @@
 $colors: (
-  strange: #CF6A32,
-  unusual: #8650AC,
-  unique: #FFD700,
-  genuine: #4D7455,
+  strange: #cf6a32,
+  unusual: #8650ac,
+  unique: #ffd700,
+  genuine: #4d7455,
   vintage: #476291,
-  decorated: #FAFAFA,
-  collectors: #AA0000,
-  haunted: #38F3AB,
-  normal: #B2B2B2,
+  decorated: #fafafa,
+  collectors: #aa0000,
+  haunted: #38f3ab,
+  normal: #b2b2b2,
   cash: #7b9a6d,
 );
 
@@ -32,16 +32,15 @@ $highlight-background: #131c27;
   }
 }
 
-
 $tf2-font: (
-  family: 'TF2 Build',
+  family: "TF2 Build",
   size: 16px,
   color: white,
 );
 
 // example of using a mixin
 %class {
-  margin: 20px
+  margin: 20px;
 }
 .class-extend {
   @extend %class;
@@ -73,8 +72,8 @@ a {
 }
 
 .no-display {
-  display:none;  
-} 
+  display: none;
+}
 
 @media (max-width: 50em) {
   h2 {
@@ -98,7 +97,9 @@ a {
   }
 }
 
-html {background-color: $dark-background} // set all background color
+html {
+  background-color: $dark-background;
+} // set all background color
 
 body {
   background-color: $dark-background;
@@ -125,9 +126,11 @@ body {
 
 .item-form {
   background-color: $highlight-background;
-  box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -100px 100px 0px inset, 
-      rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px, 
-          rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 62px 50px;
+  box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
+    rgba(0, 0, 0, 0.15) 0px -100px 100px 0px inset,
+    rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px,
+    rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px,
+    rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 62px 50px;
   border-radius: 17px;
   max-width: 700px;
   min-width: 300px;
@@ -150,17 +153,18 @@ body {
 .checkbox-div {
   display: flex;
   justify-content: center;
-  width:100%;
-  
-  label[for="id_craftable"], label[for="id_australium"] {
+  width: 100%;
+
+  label[for="id_craftable"],
+  label[for="id_australium"] {
     @include label-styles;
   }
 
-  .checkbox-input:checked + label[for="id_craftable"], 
+  .checkbox-input:checked + label[for="id_craftable"],
   .checkbox-input:checked + label[for="id_australium"] {
-      background-color: white;
-      color: black;
-      box-shadow:1px 1px 4px 2px rgba(200,200,200, 0.5);
+    background-color: white;
+    color: black;
+    box-shadow: 1px 1px 4px 2px rgba(200, 200, 200, 0.5);
   }
 }
 
@@ -202,12 +206,11 @@ body {
 
   label {
     @include label-styles;
-
   }
-  
+
   input[type="radio"] {
-    display:none;  
-  } 
+    display: none;
+  }
 
   .radio-option {
     display: inline-block;
@@ -215,25 +218,24 @@ body {
     input[type="radio"]:checked ~ label {
       background-color: white;
       color: black;
-      box-shadow:1px 1px 4px 2px rgba(200,200,200, 0.5);
+      box-shadow: 1px 1px 4px 2px rgba(200, 200, 200, 0.5);
     }
   }
   /* for quality radio-options, displays quality colors */
   .radio-option-quality {
     display: inline-block;
-    
 
     input[type="radio"]:checked + label {
       opacity: 1;
-      box-shadow:1px 1px 4px 2px rgba(200,200,200, 0.8);
+      box-shadow: 1px 1px 4px 2px rgba(200, 200, 200, 0.8);
       color: black;
       border-radius: 5px;
-      border: 1px solid rgb(200,200,200);
+      border: 1px solid rgb(200, 200, 200);
     }
 
     input[type="radio"] + label {
-        opacity: 0.8;
-        color: black;
+      opacity: 0.8;
+      color: black;
     }
   }
 }
@@ -258,11 +260,11 @@ body {
 .item-selection {
   display: flex;
   justify-content: space-between;
-  
 }
 
-.items-sold-selection, .items-received-selection {
-  margin-top:4px;
+.items-sold-selection,
+.items-received-selection {
+  margin-top: 4px;
   display: block;
   width: 45%;
   justify-content: center;
@@ -280,31 +282,28 @@ body {
     font-size: 16px;
     color: white;
     background-color: black;
-    max-height:200px;
+    max-height: 200px;
   }
 }
 
-
 .alert {
-
   text-align: center;
   color: black;
   max-width: 1400px;
   margin: 0 auto 10px auto;
-  padding:5px;
-
+  padding: 5px;
 }
 
 .trade-register-div {
   text-align: center;
   max-width: 420px;
-  width:100%;
+  width: 100%;
   margin: auto;
   background-color: $highlight-background;
   padding: 7px;
   border-radius: 5px;
   border-style: solid;
-  border-width: 1px;  
+  border-width: 1px;
 }
 
 .trade-input-field {
@@ -314,35 +313,36 @@ body {
   min-width: 220px;
   margin: auto;
 
-  label, input {
+  label,
+  input {
     padding: 2px;
     margin: 2px;
   }
   label {
     text-align: left;
-    width:40%;
+    width: 40%;
   }
 
   input {
-    width:60%;
+    width: 60%;
     margin-left: auto;
     box-sizing: border-box;
     border: 2px solid #1b2838;
     border-radius: 8px;
     font-size: 15px;
-    text-align: center; 
+    text-align: center;
     color: white;
     background-color: black;
   }
 }
 
 .textarea-notes {
-  padding:8px;
+  padding: 8px;
   border: 2px solid #1b2838;
   border-radius: 8px;
   color: white;
   background-color: black;
-  height:100px;
+  height: 100px;
   margin-bottom: 5px;
 }
 
@@ -351,8 +351,8 @@ input[type="number"] {
   -webkit-appearance: textfield;
 }
 
-input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button { 
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   appearance: none;
 }
@@ -375,7 +375,7 @@ input[type=number]::-webkit-outer-spin-button {
   text-align: left;
   font-size: 13px;
   margin: -10px 0 0 4px;
-  color: rgb(200,200,200)
+  color: rgb(200, 200, 200);
 }
 
 /* inventory */
@@ -415,8 +415,7 @@ input[type=number]::-webkit-outer-spin-button {
   text-align: center;
   width: 120px;
   height: 130px;
-  
-  
+
   overflow: hidden;
   position: relative;
 
@@ -424,7 +423,6 @@ input[type=number]::-webkit-outer-spin-button {
     width: 100px;
     height: 110px;
   }
-
 
   .item-box-image {
     position: absolute;
@@ -472,7 +470,6 @@ input[type=number]::-webkit-outer-spin-button {
   }
 }
 
-
 /* trade display */
 
 .trade {
@@ -507,8 +504,9 @@ input[type=number]::-webkit-outer-spin-button {
     display: flex;
     justify-content: space-between;
     padding-top: 4px;
-    
-    h6, h5 {
+
+    h6,
+    h5 {
       font-family: map-get($tf2-font, family);
       color: map-get($tf2-font, color);
       display: flex;
@@ -521,10 +519,10 @@ input[type=number]::-webkit-outer-spin-button {
     display: flex;
     padding-bottom: 2px;
     justify-content: space-between;
-    padding:10px, 0, 10px;
+    padding: 10px, 0, 10px;
     width: 100%;
-    color:grey;
-    
+    color: grey;
+
     .trade-icon {
       left: 50%;
       top: 50%;
@@ -535,20 +533,20 @@ input[type=number]::-webkit-outer-spin-button {
         padding-top: 17px;
       }
     }
-    .items-sold, .items-received {
+    .items-sold,
+    .items-received {
       display: flex;
       flex-wrap: wrap;
       width: 45%;
       justify-content: center;
       min-height: 136px;
 
-
       @media (max-width: 50em) {
         min-height: 105px;
       }
     }
   }
-  
+
   hr {
     border-color: white;
     margin: 0 10px 2px 10px;
@@ -578,7 +576,7 @@ input[type=number]::-webkit-outer-spin-button {
     .notes-toggle:checked + .toggle-button {
       background-color: white;
       color: black;
-      box-shadow:1px 1px 4px 2px rgba(200,200,200, 0.5);
+      box-shadow: 1px 1px 4px 2px rgba(200, 200, 200, 0.5);
     }
 
     .toggle-button {
@@ -589,16 +587,16 @@ input[type=number]::-webkit-outer-spin-button {
       margin-bottom: 0;
       display: inline-flex;
       cursor: pointer;
-    
+
       @media (max-width: 50em) {
         padding: 6px;
         border-radius: 8px;
       }
-    
+
       &:hover {
         background-color: white;
         border-color: white;
-        box-shadow:1px 1px 4px 2px rgba(200,200,200, 0.8);
+        box-shadow: 1px 1px 4px 2px rgba(200, 200, 200, 0.8);
       }
     }
   }
@@ -608,7 +606,7 @@ input[type=number]::-webkit-outer-spin-button {
     margin: 2px 10px 0 10px;
     background-color: black;
     border-radius: 8px;
-    border: .1px solid white;
+    border: 0.1px solid white;
     display: grid;
     grid-template-rows: 0fr;
     transition: grid-template-rows 0.5s, padding 0.5s, border 0.5s;
@@ -617,7 +615,7 @@ input[type=number]::-webkit-outer-spin-button {
     position: relative;
 
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       top: -10px;
       right: -10px;
@@ -626,7 +624,7 @@ input[type=number]::-webkit-outer-spin-button {
     }
 
     span {
-      overflow:hidden;
+      overflow: hidden;
     }
   }
 
@@ -636,7 +634,6 @@ input[type=number]::-webkit-outer-spin-button {
     border: 2px solid #1b2838;
   }
 }
-
 
 /* trade history */
 
@@ -653,7 +650,6 @@ input[type=number]::-webkit-outer-spin-button {
     max-width: 1420px;
     margin: auto;
     width: 100%;
-
 
     h2 {
       grid-column: 2;
@@ -691,7 +687,7 @@ input[type=number]::-webkit-outer-spin-button {
 
   #show-source-trades-checkbox {
     position: relative;
-    width:20px;
+    width: 20px;
     height: 20px;
     cursor: pointer;
     margin-right: 4px;
@@ -704,7 +700,7 @@ input[type=number]::-webkit-outer-spin-button {
       font-size: 12px;
     }
     #show-source-trades-checkbox {
-      width:15px;
+      width: 15px;
       height: 15px;
     }
   }
@@ -717,8 +713,8 @@ input[type=number]::-webkit-outer-spin-button {
 /* Paginator */
 
 nav[aria-label="Page navigation all trades"] {
-  
-  .page-link, .page-item {
+  .page-link,
+  .page-item {
     background-color: darken($highlight-background, 0%);
     color: #fff;
     border-color: #666;
@@ -726,7 +722,7 @@ nav[aria-label="Page navigation all trades"] {
   .page-link:hover {
     background-color: darken($highlight-background, 10%);
   }
-  .disabled .page-link{
+  .disabled .page-link {
     background-color: lighten($highlight-background, 4%) !important;
     color: grey;
     border-color: #666;
