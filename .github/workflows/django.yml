@@ -17,7 +17,7 @@ jobs:
             - name: Build and run Docker image
               run: |
                 docker build -t tf2folio .
-                docker run -d --name tf2folio tf2folio
+                docker run -d --name tf2folio --network service:db tf2folio
             - name: Run Django unit tests
               run: |
                 docker exec tf2folio python3 manage.py migrate
