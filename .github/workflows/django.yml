@@ -6,8 +6,11 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
+            - name: Build and run Docker image
+              run: |
+                docker build -t tf2folio .
+                docker run -d --name tf2folio tf2folio
             - name: Run Django unit tests
               run: |
-                pip3 install -r requirements.txt
-                python3 manage.py test
+                docker exec -it tf2folio python manage.py test
 
