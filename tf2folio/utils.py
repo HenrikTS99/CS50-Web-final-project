@@ -107,18 +107,14 @@ def fetch_image_url(search_name):
     Fetches the image url from the API using the search name.
     Returns the image url if successful, else returns None.
     """
-    print(search_name)
     api_url = f"https://api.steamapis.com/image/item/440/{search_name}"
     try:
         response = requests.get(api_url, timeout=5)
-    except requests.exceptions.RequestException as e:
-        print('Request failed', e)
+    except requests.exceptions.RequestException as error:
+        print('Request failed', error)
         return
     if response.status_code == 200:
-        print("item img sucsess")
         return response.url
-    else:
-        print('Failed to fetch the image', 404, search_name)
 
 
 def create_search_name(Item):
@@ -253,7 +249,6 @@ def validate_items(response, item_list, item_received_list):
 def validate_form(form):
     """Returns a JSON response if the form is not valid."""
     if not form.is_valid():
-        print(form.errors)
         return JsonResponse({"errors": form.errors}, status=400)
     return None
 
@@ -296,7 +291,6 @@ def check_if_pure_sale(item_list, item_received_list, trade):
     Pure means keys (in-game currency) or cash, not items.
     """
     if len(item_list) == 1 and not item_received_list and trade.transaction_type == 'sale':
-        print("logging pure sale")
         process_pure_sale(item_list[0], trade)
 
 
@@ -310,12 +304,10 @@ def process_pure_sale(item, trade):
     The parent item is the item that was sold in order to acquire the current item.
     The origin trade is the trade that the item was recieved in.
     """
-    print(item)
     trade_value = trade.transaction_value
     value = Value.objects.create(item=item, transaction_method=trade_value.transaction_method,
                     currency=trade_value.currency, amount=trade_value.amount)
     add_sale_price_and_check_profit(item, value)
-    print(f'{item.item_title} sale price: {item.sale_price}')
     # find the original transaction and item that item came from
     get_parent_item_and_origin_trade(item)
 
@@ -328,7 +320,6 @@ def get_parent_item_and_origin_trade(item):
     origin_trade = None
     try:
         origin_trade = Transaction.objects.get(items_bought=item)
-        print(f'origin trade:{origin_trade}')
     except Transaction.DoesNotExist:
         print(f"No origin trade found for {item}.")
     except Transaction.MultipleObjectsReturned:
@@ -373,7 +364,6 @@ def get_item_sale_price_values(origin_trade):
     item_sale_price_values = []
     for item in origin_trade.items_bought.all():
         if not item.sale_price:
-            print(f'{item.item_title} not sold yet.')
             return None
         item_sale_price_values.append(item.sale_price)
     return item_sale_price_values
@@ -387,7 +377,6 @@ def get_total_sale_value_object(value_objects, item):
     If the value objects have different transaction methods, it converts the values to keys and returns a new Value object with the sum.
     """
     if all(value_object.transaction_method == value_objects[0].transaction_method for value_object in value_objects):
-        print("Same transaction method:", value_objects[0].transaction_method)
         return Value.objects.create(item=item, transaction_method=value_objects[0].transaction_method, 
                 currency=value_objects[0].currency, amount=sum([value_object.amount for value_object in value_objects]))
     return convert_sale_values_to_key_value_objects(value_objects, item)
@@ -480,7 +469,6 @@ def add_sale_price_and_check_profit(item, value):
     profit_value = get_item_profit_value(item)
     if profit_value:
         item.add_profit_value(profit_value)
-        print(f'{item.item_title} profit: {item.profit_value}')
 
 
 def get_item_profit_value(item):

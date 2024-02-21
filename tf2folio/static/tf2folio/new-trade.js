@@ -72,7 +72,6 @@ function fetchItemHTML(itemId, item_type) {
   })
     .then((response) => response.json())
     .then((data) => {
-      console.log("Data sent sucsessfully", data);
       // Append the new item to the page
       appendItemToPage(data, item_type);
     })
@@ -207,7 +206,6 @@ function appendNewItem(data) {
 
 // Register trade to server, if successful redirect to trade display page
 function register_trade(event) {
-  console.log("Registering trade");
   // get selected items
   event.preventDefault();
   let itemIds = getItemIds(selectedItemsContainer);
@@ -227,7 +225,7 @@ function register_trade(event) {
       return response.json();
     })
     .then((data) => {
-      console.log(data.message);
+
       window.location.href = data.redirect_url;
     })
     .catch((errors) => {

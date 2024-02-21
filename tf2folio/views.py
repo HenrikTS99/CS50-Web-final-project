@@ -260,7 +260,6 @@ def register_trade(request):
         A JSON response. If the trade registration is successful, this response contains the trade history redirect URL. 
         If there is an error, the response contains the error message.
     """
-    print(request.POST)
     (
         transaction_method,
         item_list,
