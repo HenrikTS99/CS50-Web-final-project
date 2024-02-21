@@ -2,13 +2,14 @@
 <title>{% block title %}{{ Register }}{% endblock %}</title>
 {% block body %}
 
-    <h2>Register</h2>
+    
 
-    {% if message %}
-        <div>{{ message }}</div>
-    {% endif %}
+    <form class="styled-form " action="{% url 'register' %}" method="post">
+        <h2 class="title">Register</h2>
 
-    <form action="{% url 'register' %}" method="post">
+        {% if message %}
+            <div>{{ message }}</div>
+        {% endif %}
         {% csrf_token %}
         <div class="form-group">
             <input class="form-control" autofocus type="text" name="username" placeholder="Username">
@@ -20,8 +21,9 @@
             <input class="form-control" type="password" name="confirmation" placeholder="Confirm Password">
         </div>
         <input class="btn btn-primary" type="submit" value="Register">
+        <span style="color: white;">Already have an account?</span> <a href="{% url 'login' %}">Log In here.</a>
     </form>
 
-    <span>Already have an account?</span> <a href="{% url 'login' %}">Log In here.</a>
+    
 
 {% endblock %}

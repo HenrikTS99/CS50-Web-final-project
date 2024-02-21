@@ -1,3 +1,6 @@
+"""
+template filters for trade history html page.
+"""
 from django import template
 
 register = template.Library()
@@ -20,15 +23,19 @@ transaction_info = {
         },
     }
 
+
 @register.filter
 def get_transaction_info(key):
+    """Get the transaction info for the given key."""
     return transaction_info.get(key)
 
 
 @register.filter
 def value_display(value):
+    """Display the value number, with currency if it exists."""
     currency = value.currency if value.currency else ""
-    amount = str(value.amount).rstrip('0').rstrip('.') if '.' in str(value.amount) else value.amount
+    # Remove trailing zeroes and decimal point
+    amount = str(value.amount).rstrip('0').rstrip('.') if '.' in str(value.amount) else value.amount 
     transaction_method = value.get_transaction_method_display()
     if transaction_method == 'Keys' and amount == '1':
         transaction_method = 'Key'

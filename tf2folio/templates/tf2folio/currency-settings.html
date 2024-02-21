@@ -3,7 +3,7 @@
 
 {% block body %}
 
-<form id="settings-form" class="item-form" action="{% url 'currency_settings' %}" method="POST">
+<form id="settings-form" class="styled-form" action="{% url 'currency_settings' %}" method="POST">
     
     {% csrf_token %}
     <h3 class="title">Market Settings</h3>
