@@ -11,10 +11,10 @@ jobs:
             - uses: actions/checkout@v2
             - name: Build and run Docker image
               run: |
-                docker compose up --build -d
+                docker compose up -d
                 
             - name: Run Django unit tests
               run: |
-                docker compose exec web python3 manage.py migrate
-                docker compose exec web python3 manage.py test
+                docker exec web python3 manage.py migrate
+                docker exec web python3 manage.py test
 
