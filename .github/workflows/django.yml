@@ -13,6 +13,6 @@ jobs:
                 
             - name: Run Django unit tests
               run: |
-                docker exec tf2folio python3 manage.py migrate
-                docker exec tf2folio python3 manage.py test
+                docker compose exec tf2folio python3 manage.py migrate
+                docker compose exec tf2folio python3 manage.py test
 
