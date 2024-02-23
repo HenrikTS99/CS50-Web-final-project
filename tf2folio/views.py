@@ -104,7 +104,7 @@ def login_view(request):
         password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
 
-        if user is not None:
+        if user:
             login(request, user)
             return HttpResponseRedirect(reverse("index"))
         else:
@@ -117,7 +117,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return HttpResponseRedirect(reverse("index"))
+    return HttpResponseRedirect(reverse("login"))
 
 
 def register(request):
@@ -151,6 +151,7 @@ def register(request):
 def new_trade(request):
     """
     Displays the new trade form. Retrives all necessary forms and data for the HTML page.
+    
     User is used to get the user's default currency settings in the form.
     'particle effects' and 'texture names' are used to autocomplete
     the input fields on the HTML page for registering new items.

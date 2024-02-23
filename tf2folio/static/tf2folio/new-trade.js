@@ -365,6 +365,9 @@ function handleKeyTransactionMethod(transactionMethod) {
   setTransactionBoxDisplay(transactionMethod, "unique");
   setDisplayValue(DISPLAY_BLOCK);
   hideCurrencyFieldsAndLabels();
+  currencyFields.forEach((field) => {
+    field.value = '';
+  });
 }
 
 function handleItemsTransactionMethod(transactionMethod) {
