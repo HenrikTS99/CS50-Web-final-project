@@ -1,6 +1,6 @@
 """
-This module contains utility functions for the tf2folio app. It includes functions for
-views module and models module.
+This module contains utility functions for the tf2folio app.
+It includes functions used in the views module.
 """
 
 import os
@@ -59,8 +59,8 @@ def create_title(Item):
     title_parts = []
     if not Item.craftable:
         title_parts.append('Uncraftable')
-    if Item.quality != 'unique':
-        title_parts.append(Item.quality.title())
+    if Item.quality not in  ['unique', 'decorated']:
+        title_parts.append(title_case(Item.quality))
     if Item.killstreak:
         killstreak_title = ('Killstreak' if Item.killstreak == 'standard' 
                             else f"{Item.killstreak.title()} Killstreak")
@@ -68,9 +68,9 @@ def create_title(Item):
     if Item.australium:
         title_parts.append('Australium')
     if Item.texture_name:
-        title_parts.append(Item.texture_name.title())
+        title_parts.append(title_case(Item.texture_name))
     if Item.particle_effect:
-        title_parts.append(Item.particle_effect.title())
+        title_parts.append(title_case(Item.particle_effect))
 
     title_parts.append(Item.item_name)
 
@@ -85,13 +85,14 @@ def create_image(Item):
     Creates the search name for the item and fetches the image url from the API, using the search name.
     """
     search_name = create_search_name(Item)
+    print(search_name)
 
     for _ in range(2):
         image_url = fetch_image_url(search_name)
         if image_url:
             return image_url
         # Test again with capitalized title
-        search_name = search_name.title()
+        search_name = title_case(search_name)
 
     if Item.texture_name:
         search_names = create_skin_search_names(Item)
@@ -102,7 +103,18 @@ def create_image(Item):
     return None
 
 
+def title_case(string):
+    """
+    Returns the string in title case.
+
+    Use this instead of .title() to avoid capitalizing characters after apostrophes.
+    For example: "a's b" -> "A's B" instead of "A'S B, which is the result of .title()
+    """
+    return ' '.join(word[0].upper() + word[1:] for word in string.split())
+
+
 def fetch_image_url(search_name):
+    print(search_name)
     """
     Fetches the image url from the API using the search name.
     Returns the image url if successful, else returns None.
@@ -136,7 +148,8 @@ def create_search_name(Item):
     elif Item.quality == 'unique':
         search_name = Item.item_name
     else:
-        search_name = f'{Item.quality.title()} {Item.item_name}'
+        search_name = f'{Item.get_quality_display()} {Item.item_name}'
+    print(search_name)
     return search_name
 
 
@@ -164,7 +177,7 @@ def create_skin_search_names(Item):
     wear_tiers = reorder_wear_tiers(Item)
 
     for i in wear_tiers:
-        search_names.append(f'{Item.texture_name.title()} {Item.item_name.title()} ({i})')
+        search_names.append(f'{title_case(Item.texture_name)} {title_case(Item.item_name)} ({i})')
     return search_names
 
 

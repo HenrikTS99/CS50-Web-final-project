@@ -26,6 +26,7 @@ class ItemForm(ModelForm):
     """
     @staticmethod
     def get_input_attrs(placeholder, list_name=None):
+        """Generate a dictionary of attributes for an input field."""
         attrs = {'class': 'item-input-field', 'placeholder': placeholder}
         if list_name:
             attrs['list'] = list_name

@@ -5,6 +5,7 @@ from django import template
 
 register = template.Library()
 
+# Dictionary mapping transaction methods to their corresponding information
 transaction_info = {
         'keys': {
             'image': 'https://steamcdn-a.akamaihd.net/apps/440/icons/key.be0a5e2cda3a039132c35b67319829d785e50352.png',

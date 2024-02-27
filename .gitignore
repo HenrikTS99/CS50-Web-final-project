@@ -1,1 +1,4 @@
 tf2folio/static/CACHE/
+tf2folio/migrations/__pycache__/
+tf2folio/__pycache__/
+tf2folio/templatetags/__pycache__/

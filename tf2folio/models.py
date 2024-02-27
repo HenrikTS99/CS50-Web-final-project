@@ -85,7 +85,7 @@ class Item(models.Model):
         ('genuine', 'Genuine'),
         ('decorated', 'Decorated'),
         ('haunted', 'Haunted'),
-        ('collectors', 'Collectors'),
+        ("collectors", "Collector's"),
         ('normal', 'Normal')
     ]
 
