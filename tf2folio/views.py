@@ -61,13 +61,13 @@ def item_trade_history(request, item_id):
     Fetches and returns all the trades involving a specific item
 
     Q-objects info: https://docs.djangoproject.com/en/5.0/topics/db/queries/#complex-lookups-with-q-objects
-
+    distinct() removes duplicate trades from the queryset
     Returns:
         trade-history template with all the trades the specific item is in
     """
     item_trades = Transaction.objects.filter(
         Q(owner=request.user) & (Q(items_sold__id=item_id) | Q(items_bought__id=item_id))
-    ).order_by('-date')
+    ).distinct().order_by('-date')
     return render(request, "tf2folio/trade-history.html", {
         "all_trades": item_trades,
     })

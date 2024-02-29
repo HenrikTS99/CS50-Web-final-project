@@ -3,6 +3,8 @@ version: "3"
 services:
   db:
     image: postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -15,6 +17,8 @@ services:
       
   web:
     build: .
+    command: sh -c "python3 manage.py migrate && 
+            python3 manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/usr/src/app
     ports:
@@ -22,3 +26,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
+        
+volumes:
+  db_data:

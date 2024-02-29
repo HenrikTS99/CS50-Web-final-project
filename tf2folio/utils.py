@@ -85,7 +85,6 @@ def create_image(Item):
     Creates the search name for the item and fetches the image url from the API, using the search name.
     """
     search_name = create_search_name(Item)
-    print(search_name)
 
     for _ in range(2):
         image_url = fetch_image_url(search_name)
@@ -149,7 +148,6 @@ def create_search_name(Item):
         search_name = Item.item_name
     else:
         search_name = f'{Item.get_quality_display()} {Item.item_name}'
-    print(search_name)
     return search_name
 
 

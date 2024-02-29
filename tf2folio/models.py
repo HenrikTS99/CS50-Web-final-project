@@ -104,7 +104,7 @@ class Item(models.Model):
     ]
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="owned_items")
-    item_name = models.CharField(max_length=150)
+    item_name = models.CharField(max_length=500)
     item_title = models.CharField(max_length=250, blank=True)
     quality = models.CharField(max_length=20, choices=QUALITY)
     craftable = models.BooleanField(default=True)
@@ -113,10 +113,9 @@ class Item(models.Model):
     wear = models.CharField(max_length=20, choices=WEAR_TIERS, blank=True)
     particle_effect = models.CharField(max_length=64, blank=True)
     particle_id = models.CharField(max_length=4, blank=True, null=True)
-    description = models.TextField(max_length=400, null=True, blank=True)
     killstreak = models.CharField(max_length=20, choices=KILLSTREAK_TIERS, null=True, blank=True)
     sold = models.BooleanField(default=False)
-    image_url = models.URLField(max_length=400, null=True, blank=True)
+    image_url = models.URLField(max_length=600, null=True, blank=True)
     purchase_price = models.OneToOneField('Value', on_delete=models.SET_NULL,
                                           related_name="purchase_price_value", default=None, null=True, blank=True)
     sale_price = models.OneToOneField('Value', on_delete=models.SET_NULL,

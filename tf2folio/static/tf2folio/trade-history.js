@@ -44,6 +44,7 @@ function toggleSourceTradeDisplay(checkBox) {
   const newUrl = new URL(window.location.href);
   if (checkBox.checked) {
     newUrl.searchParams.set("source_trades", checkBox.checked);
+    newUrl.pathname = '/trade_history'; // Set the path to the base URL
   } else {
     newUrl.searchParams.delete("source_trades");
   }
