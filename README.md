@@ -1,5 +1,25 @@
 # TF2Folio
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Quick Overview of Team Fortress 2 Trading](#quick-overview-of-team-fortress-2-trading)
+    - [Team Fortress 2](#team-fortress-2)
+    - [Items](#items)
+    - [Different Currencies](#different-currencies)
+- [Purpose of The Project](#purpose-of-the-project)
+    - [Trade Tracking](#trade-tracking)
+    - [Profit Calculations](#profit-calculations)
+    - [Currency and Transaction Method Conversions](#currency-and-transaction-method-conversions)
+- [Distinctiveness and Complexity](#distinctiveness-and-complexity)
+    - [Item Registation](#item-registation)
+    - [Interactive Trade Registration](#interactive-trade-registration)
+    - [Trade Profit Calculation](#trade-profit-calculation)
+- [Files & Directories](#files--directories)
+- [Database Structure](#database-structure)
+- [How to Run the Application](#how-to-run-the-application)
+- [API's used](#apis-used)
+
 ## Overview
 
 TF2Folio is a Django web application designed to log and track trades and profits from trading items from Team Fortress 2 (TF2). This application is designed to assist TF2 traders in managing their trading activities by enabling them to log their trades, keep track of their inventory and transactions, and automatically calculate profits from these trades when possible.
@@ -7,7 +27,7 @@ TF2Folio is a Django web application designed to log and track trades and profit
 The application is built with Django for the backend, and JavaScript and SCSS for the frontend. It is containerized using Docker and uses postgres as the database.
 
 This is my final project for the 'CS50's Web Programming with Python and JavaScript' course. It therefore follows the requirements specified in the [CS50 Capstone Project Guidelines](https://cs50.harvard.edu/web/2020/projects/final/capstone/).  
-**Project Demo**: https://www.youtube.com/watch?v=3mjM0wrqoL8
+**Video Demo**: https://www.youtube.com/watch?v=3mjM0wrqoL8
 
 ## Quick Overview of Team Fortress 2 Trading
 
@@ -71,7 +91,6 @@ The application can also calculate profits even when different currencies and tr
     <summary>Example of item bought for the same amount in the same currency, but in diffrent transaction methods (SCM funds and cash)</summary>
     <img src="https://gyazo.com/b88ec755a3f07960e1c4bfa1d8474085.png" alt="Profit calculation example">
 </details>  
-<br>
 
 ### Currency and Transaction Method Conversions
 In the last example, we can see the transactions are done in the same currencies and for the same amount. However, because Steam funds and cash do not hold the same value, as explained earlier under `Different Currencies`, we still end up with a profit of about 1.23 Keys, equivalent to around 2 dollars.
@@ -246,20 +265,20 @@ The `Transaction` model stores data about transactions logged by users themselve
 
 Before you begin, make sure you have [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed.
 
-### Installation with docker
+### Installation with Docker
 
 1. Clone the repository: `git clone https://github.com/HenrikTS99/CS50-Web-final-project.git`
 2. Navigate to the project directory: `cd CS50-Web-final-project`
 3. Build and run the Docker image: `docker compose up -d`
 4. Access the application in your web browser at `localhost:8000` or [`127.0.0.1:8000`](http://127.0.0.1:8000)
 
-### How to create a superuser
+### How to Create a Superuser
 
 1. Find the docker container (web container) ID by running `docker ps`
 2. Run this command when docker is up: `docker exec -it <container_id> python manage.py createsuperuser`
 
 
-## API's used
+## API's Used
 
 [**Steam Image API**](https://steamapis.com/docs/images#item): This API is used in the project to get item images. As the API relies on item images from Steam Community Market, it is unable to generate images for items that cannot be listed or have not been listed on Steam Community Market.
 
